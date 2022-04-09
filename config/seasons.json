@@ -1,0 +1,20 @@
+[
+    { "season" : "winter", "year" : 2018  },
+    { "season" : "spring", "year" : 2018  },
+    { "season" : "summer", "year" : 2018  },
+    { "season" : "fall", "year" : 2018  },
+    { "season" : "winter", "year" : 2019  },
+    { "season" : "spring", "year" : 2019  },
+    { "season" : "summer", "year" : 2019  },
+    { "season" : "fall", "year" : 2019  },
+    { "season" : "winter", "year" : 2020  },
+    { "season" : "spring", "year" : 2020  },
+    { "season" : "summer", "year" : 2020  },
+    { "season" : "fall", "year" : 2020  },
+    { "season" : "winter", "year" : 2021  },
+    { "season" : "spring", "year" : 2021  },
+    { "season" : "summer", "year" : 2021  },
+    { "season" : "fall", "year" : 2021  },
+    { "season" : "winter", "year" : 2022  },
+    { "season" : "spring", "year" : 2022  }
+]
