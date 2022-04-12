@@ -1,7 +1,8 @@
 import { Log } from './log.js';
 import { Database } from './database.js';
 
-import { Anilist } from './facade/anilist.js';
+import { AniList } from './facade/anilist.js';
+import { MyAnimeList } from './facade/myanimelist.js';
 
 class Program {
 
@@ -12,9 +13,11 @@ class Program {
     buildFacade(source) {
         switch (source.toLowerCase()) {
             case 'anilist':
-                return new Anilist(this.database);
+                return new AniList(this.database);
 
             case 'myanimelist':
+                return new MyAnimeList(this.database);
+                
             default:
                 throw new Error(`source '${source}' is not implemented.`);
         }
@@ -59,6 +62,31 @@ class Program {
                 await facade.savePersonal(animes);
             } else {
                 Log.warn(`program : personal command : no data to save : [ ${source}, ${config} ]`);
+            }
+            
+        } catch (error) {
+            if (error.isAxiosError) {
+                Log.fatal(error.response.data.errors);
+            }
+            Log.fatal(error.message);
+            Log.fatal(error.stack);
+        }
+    }
+    
+    async runScout(source, config, fromArchive = false) {
+        try {
+            Log.info(`program : scout command : [ ${source}, ${config} ]`);
+
+            await this.database.init();
+
+            let facade = this.buildFacade(source);
+
+            let animes = await facade.getAnimeByScout(config, fromArchive);
+            
+            if (animes && animes.length > 0) {
+                await facade.saveScout(animes);
+            } else {
+                Log.warn(`program : scout command : no data to save : [ ${source}, ${config} ]`);
             }
             
         } catch (error) {

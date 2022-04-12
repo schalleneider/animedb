@@ -34,9 +34,34 @@ class Database {
     async select(config) {
         return this.database.get(config.query, config.params)
     }
+    
+    async selectAll(config) {
+        return this.database.all(config.query, config.params)
+    }
 
     async exec(config) {
         return this.database.run(config.query, config.params)
+    }
+
+    async getAnilistToScout(criteria) {
+        
+        try {
+
+            const result = await this.selectAll({
+                query: `${criteria.base} ${criteria.query}`
+            });
+
+            if (result.length > 0) {
+                return result;
+            }
+
+        } catch (error) {
+            Log.error(`database : error scouting anilist : [ ${criteria} ]`);
+            Log.error(error.message);
+            Log.error(error.stack);
+        }
+
+        return [];
     }
 
     async saveAnilist(animes) {
@@ -112,7 +137,7 @@ class Database {
 
         await this.commit();
 
-        Log.info(`database : personal updated : [ added: ${execResults.added}, updated: ${execResults.updated}, deleted: ${execResults.deleted}, errors: ${execResults.errors} ]`);
+        Log.info(`database : anilist updated : [ added: ${execResults.added}, updated: ${execResults.updated}, deleted: ${execResults.deleted}, errors: ${execResults.errors} ]`);
     }
 
     async savePersonal(animes) {
@@ -192,6 +217,120 @@ class Database {
             Log.error(error.stack);
             await this.rollback();
         }
+    }
+
+    async saveMyAnimeList(animes) {
+
+        let execResults = { added: 0, updated: 0, deleted: 0, errors: 0 };
+
+        await this.begin();
+
+        for (let animeIndex = 0; animeIndex < animes.length; animeIndex++) {
+            
+            const currentAnime = animes[animeIndex];
+            
+            try {
+
+                const currentExists = await this.select({
+                    query: `SELECT Id FROM MyAnimeList WHERE Id = ?`, 
+                    params: [ currentAnime.id ]
+                });
+                
+                if (currentExists) {
+
+                    await this.exec({
+                        query: `UPDATE MyAnimeList SET Title = ?, Type = ?, Season = ?, SeasonYear = ?, NumberOfEpisodes = ?, StartDate = ?, EndDate = ?, Status = ? WHERE Id = ?`, 
+                        params: [
+                            currentAnime.title,
+                            currentAnime.type,
+                            currentAnime.season,
+                            currentAnime.seasonYear,
+                            currentAnime.numberOfEpisodes,
+                            currentAnime.startDate,
+                            currentAnime.endDate,
+                            currentAnime.status,
+                            currentAnime.id
+                        ]
+                    });
+                    execResults.updated++;
+                } else {
+                    await this.exec({
+                        query: `INSERT INTO MyAnimeList (Id, Title, Type, Season, SeasonYear, NumberOfEpisodes, StartDate, EndDate, Status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                        params: [
+                            currentAnime.id,
+                            currentAnime.title,
+                            currentAnime.type,
+                            currentAnime.season,
+                            currentAnime.seasonYear,
+                            currentAnime.numberOfEpisodes,
+                            currentAnime.startDate,
+                            currentAnime.endDate,
+                            currentAnime.status
+                        ]
+                    });
+                    execResults.added++;
+                }
+            } catch (error) {
+                Log.error(`database : error updating myanimelist : [ ${currentAnime.id}, ${currentAnime.title} ]`);
+                Log.error(error.message);
+                Log.error(error.stack);
+                execResults.errors++;
+            }
+        }
+
+        await this.commit();
+
+        Log.info(`database : myanimelist updated : [ added: ${execResults.added}, updated: ${execResults.updated}, deleted: ${execResults.deleted}, errors: ${execResults.errors} ]`);
+    }
+
+    async saveScout(animes) {
+
+        let execResults = { added: 0, updated: 0, deleted: 0, errors: 0 };
+
+        await this.begin();
+
+        for (let animeIndex = 0; animeIndex < animes.length; animeIndex++) {
+            
+            const currentAnime = animes[animeIndex];
+            
+            try {
+
+                const currentExists = await this.select({
+                    query: `SELECT AniListId FROM AniList_MyAnimeList WHERE AniListId = ?`, 
+                    params: [ currentAnime.aniListId ]
+                });
+                
+                if (currentExists) {
+
+                    await this.exec({
+                        query: `UPDATE AniList_MyAnimeList SET MyAnimeListId = ? WHERE AniListId = ?`, 
+                        params: [
+                            currentAnime.id,
+                            currentAnime.aniListId
+                        ]
+                    });
+                    execResults.updated++;
+                } else {
+                    await this.exec({
+                        query: `INSERT INTO AniList_MyAnimeList (AniListId, MyAnimeListId) VALUES (?, ?)`,
+                        params: [
+                            currentAnime.aniListId,
+                            currentAnime.id
+                        ]
+                    });
+                    execResults.added++;
+                }
+            } catch (error) {
+                Log.error(`database : error updating scout : [ ${currentAnime.id}, ${currentAnime.title} ]`);
+                Log.error(error.message);
+                Log.error(error.stack);
+                execResults.errors++;
+            }
+        }
+
+        await this.commit();
+
+        Log.info(`database : scout updated : [ added: ${execResults.added}, updated: ${execResults.updated}, deleted: ${execResults.deleted}, errors: ${execResults.errors} ]`);
     }
 }
 

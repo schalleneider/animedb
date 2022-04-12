@@ -6,10 +6,10 @@
   "exports": "./main.js",
   "scripts": {
     "start": "node main.js",
-    "start:seasons": "node main.js seasons --database='database/example.sqlite3' --source='anilist' --config='config/seasons.json'",
-    "start:seasons:archive": "node main.js seasons --database='database/example.sqlite3' --source='anilist' --config='archive/anilist_seasons_exemple.json' --archive",
-    "start:personal": "node main.js personal --database='database/example.sqlite3' --source='anilist' --config='config/personal.json'",
-    "start:personal:archive": "node main.js personal --database='database/example.sqlite3' --source='anilist' --config='archive/anilist_personal_exemple.json' --archive"
+    "start:seasons": "node main.js seasons --database='database/template.sqlite3' --source='anilist' --config='config/seasons.json'",
+    "start:seasons:archive": "node main.js seasons --database='database/template.sqlite3' --source='anilist' --config='archive/anilist_seasons_exemple.json' --archive",
+    "start:personal": "node main.js personal --database='database/template.sqlite3' --source='anilist' --config='config/personal.json'",
+    "start:personal:archive": "node main.js personal --database='database/template.sqlite3' --source='anilist' --config='archive/anilist_personal_exemple.json' --archive"
   },
   "author": "wschneider",
   "license": "ISC",

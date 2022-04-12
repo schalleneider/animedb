@@ -15,7 +15,7 @@ let argv = (yargs)(process.argv.slice(2))
                 'config' : { type : 'string' },
                 'archive' : { type : 'boolean', default: false }
             })
-            .demandOption([ 'database', 'source', 'config', 'archive' ], "example: node main.js seasons --database='database/example.sqlite3' --source='anilist' --config='config/seasons.json'")
+            .demandOption([ 'database', 'source', 'config', 'archive' ], "example: node main.js seasons --database='database/template.sqlite3' --source='anilist' --config='config/seasons.json'")
         },
         handler: async (argv) =>  {
             await (new Program(argv.database).runSeasons(argv.source, argv.config, argv.archive));
@@ -32,11 +32,28 @@ let argv = (yargs)(process.argv.slice(2))
                 'config' : { type : 'string' },
                 'archive' : { type : 'boolean', default: false }
             })
-            .demandOption([ 'database', 'source', 'config', 'archive' ], "example: node main.js personal --database='database/example.sqlite3' --source='anilist' --config='config/personal.json'")
+            .demandOption([ 'database', 'source', 'config', 'archive' ], "example: node main.js personal --database='database/template.sqlite3' --source='anilist' --config='config/personal.json'")
         },
         handler: async (argv) => {
             await (new Program(argv.database).runPersonal(argv.source, argv.config, argv.archive));
             Log.info('main : personal command completed...');
+        }
+    })
+    .command({
+        command: 'scout [options]',
+        desc: 'scout anime information on myanimelist based on anilist entries',
+        builder: (yargs) => { yargs
+            .options({
+                'database' : { type : 'string' },
+                'source' : { type : 'string' },
+                'config' : { type : 'string' },
+                'archive' : { type : 'boolean', default: false }
+            })
+            .demandOption([ 'database', 'source', 'config', 'archive' ], "example: node main.js scout --database='database/template.sqlite3' --source='myanimelist' --config='config/scout.json'")
+        },
+        handler: async (argv) => {
+            await (new Program(argv.database).runScout(argv.source, argv.config, argv.archive));
+            Log.info('main : scout command completed...');
         }
     })
     .demandCommand()

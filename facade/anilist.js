@@ -6,7 +6,7 @@ import { Config } from '../config.js';
 import { Common } from '../common.js';
 import { Archive } from '../archive.js';
 
-class Anilist {
+class AniList {
 
     constructor(database) {
         this.database = database;
@@ -24,6 +24,10 @@ class Anilist {
             return this.getAnimeByPersonalListArchive(config)
         } 
         return this.getAnimeByPersonalListAPI(Config.parse(config));
+    }
+
+    async getAnimeByScout(config, fromArchive = false) {
+        Log.warn('anilist : scout command is not supported : see help for more information');
     }
     
     async getAnimeBySeasonsArchive(config) {
@@ -227,6 +231,10 @@ class Anilist {
         await this.database.savePersonal(animes);
     }
 
+    async saveScout(animes) {
+        Log.warn('anilist : scout command is not supported : see help for more information');
+    }
+
     parseAnimeMedia(media) {
         let currentMediaStartDate = Common.getDate(media.startDate.year, media.startDate.month, media.startDate.day);
         let item = {
@@ -287,4 +295,4 @@ class Anilist {
     }
 }
 
-export { Anilist };
+export { AniList };
