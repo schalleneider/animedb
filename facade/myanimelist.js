@@ -50,7 +50,7 @@ class MyAnimeList {
     }
     
     async getAnimeThemesArchive(config) {
-        Log.debug(`myanimelist : using anime scout archive : [ ${config} ]`);
+        Log.debug(`myanimelist : using anime themes archive : [ ${config} ]`);
         return Config.parse(config);
     }
 
