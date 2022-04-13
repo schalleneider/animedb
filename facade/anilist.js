@@ -27,7 +27,11 @@ class AniList {
     }
 
     async getAnimeByScout(config, fromArchive = false) {
-        Log.warn('anilist : scout command is not supported : see help for more information');
+        Log.warn('anilist : scout command is not supported : see --help for more information');
+    }
+
+    async getAnimeThemes(config, fromArchive = false) {
+        Log.warn('anilist : themes command is not supported : see --help for more information');
     }
     
     async getAnimeBySeasonsArchive(config) {
@@ -222,17 +226,21 @@ class AniList {
 
     async saveAnime(animes) {
         Log.info(`anilist : saving anime : [ ${animes.length} entries ]`);
-        await this.database.saveAnilist(animes);
+        await this.database.saveAniList(animes);
     }
     
     async savePersonal(animes) {
         Log.info(`anilist : saving personal anime : [ ${animes.length} entries ]`);
-        await this.database.saveAnilist(animes);
+        await this.database.saveAniList(animes);
         await this.database.savePersonal(animes);
     }
 
     async saveScout(animes) {
-        Log.warn('anilist : scout command is not supported : see help for more information');
+        Log.warn('anilist : scout command is not supported : see --help for more information');
+    }
+    
+    async saveThemes(animes) {
+        Log.warn('anilist : themes command is not supported : see --help for more information');
     }
 
     parseAnimeMedia(media) {

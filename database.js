@@ -43,12 +43,11 @@ class Database {
         return this.database.run(config.query, config.params)
     }
 
-    async getAnilistToScout(criteria) {
-        
+    async getAniList(criteria) {
         try {
 
             const result = await this.selectAll({
-                query: `${criteria.base} ${criteria.query}`
+                query: `${criteria.base} ${criteria.criteria}`
             });
 
             if (result.length > 0) {
@@ -64,7 +63,78 @@ class Database {
         return [];
     }
 
-    async saveAnilist(animes) {
+    async getMyAnimeList(criteria) {
+        try {
+
+            const result = await this.selectAll({
+                query: `${criteria.base} ${criteria.criteria}`
+            });
+
+            if (result.length > 0) {
+                return result;
+            }
+
+        } catch (error) {
+            Log.error(`database : error scouting anilist : [ ${criteria} ]`);
+            Log.error(error.message);
+            Log.error(error.stack);
+        }
+
+        return [];
+    }
+
+    async createSource(externalId, sourceType) {
+        
+        let currentSourceType = await this.select({
+            query: `SELECT Id, Key, Name FROM SourceType WHERE Key = ?`, 
+            params: [
+                sourceType.key
+            ]
+        });
+
+        if (currentSourceType === undefined) {
+
+            let mustCreate = await Prompt.askConfirmation(`[ ${sourceType.key} : ${sourceType.name} ] source type not found in the database. must be created ? otherwise anime data will be lost`);
+            
+            if (mustCreate) {
+                let newSourceType = await this.exec({
+                    query: `INSERT INTO SourceType VALUES (NULL, ?, ?)`,
+                    params: [
+                        sourceType.key,
+                        sourceType.name
+                    ]
+                });
+
+                currentSourceType = {
+                    Id : newSourceType.lastID,
+                    Key: sourceType.key,
+                    Name: sourceType.name
+                };
+            }
+            else {
+                Log.warn(`database : [ ${sourceType.key} : ${sourceType.name} ] source type was not created and anime data was not commited to the database`);
+                return undefined;
+            }
+        }
+
+        try {
+            await this.exec({
+                query: `INSERT INTO Source VALUES (NULL, ?, ?, ?)`,
+                params: [
+                    `${currentSourceType.Key}-${externalId}`,
+                    externalId,
+                    currentSourceType.Id,
+                ]
+            });
+
+        } catch (error) {
+            Log.error(`database : error updating source : [ ${externalId}, ${sourceType.key}, ${sourceType.name} ]`);
+            Log.error(error.message);
+            Log.error(error.stack);
+        }
+    }
+
+    async saveAniList(animes) {
 
         let execResults = { added: 0, updated: 0, deleted: 0, errors: 0 };
 
@@ -125,6 +195,7 @@ class Database {
                             currentAnime.siteUrl
                         ]
                     });
+                    await this.createSource(currentAnime.id, { key: "ANI", name: "AniList" });
                     execResults.added++;
                 }
             } catch (error) {
@@ -268,6 +339,7 @@ class Database {
                             currentAnime.status
                         ]
                     });
+                    await this.createSource(currentAnime.id, { key: "MAL", name: "MyAnimeList" });
                     execResults.added++;
                 }
             } catch (error) {

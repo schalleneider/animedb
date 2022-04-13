@@ -39,6 +39,57 @@ class Common {
         return relations.some(r => r.relationType == "SEQUEL");
     }
 
+    static parseAnimeThemes(themes, type) {
+        if (themes === undefined) {
+            return [];
+        }
+        const regex = /^((#*([0-9]*):*)(.+))( by )([^(\n]+)(\([\S ]+\).?)*$/;
+        let songs = [];
+        for (let index = 0; index < themes.length; index++) {
+            const current = themes[index];
+            const match = regex.exec(current.text.trim());
+            if (match) {
+                const song = {
+                    title : Common.parseThemeTitle(match[4].trim()),
+                    artist : Common.parseThemeArtist(match[6].trim()),
+                    type : type,
+                    sequence : Common.parseThemeSequence(match[3]),
+                };
+                songs.push(song);
+            } else {
+                const song = {
+                    title : current.text.trim(),
+                    artist : '',
+                    type : type,
+                    sequence : -1,
+                };
+                songs.push(song);
+            }
+        }
+        return songs;
+    }
+
+    static parseThemeSequence(sequence) {
+        if (sequence === '') {
+            return 1;
+        }
+        return parseInt(sequence);
+    }
+
+    static parseThemeTitle(title) {
+        if (title[0] === '\"') {
+            title = title.substr(1, title.length - 1);
+        }
+        if (title[title.length - 1] === '\"') {
+            title = title.substr(0, title.length -1);
+        }
+        return title;
+    }
+
+    static parseThemeArtist(artist) {
+        return artist;
+    }
+
 }
 
 export { Common }

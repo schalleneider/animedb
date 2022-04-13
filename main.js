@@ -56,6 +56,23 @@ let argv = (yargs)(process.argv.slice(2))
             Log.info('main : scout command completed...');
         }
     })
+    .command({
+        command: 'themes [options]',
+        desc: 'imports opening and ending themes from myanimelist',
+        builder: (yargs) => { yargs
+            .options({
+                'database' : { type : 'string' },
+                'source' : { type : 'string' },
+                'config' : { type : 'string' },
+                'archive' : { type : 'boolean', default: false }
+            })
+            .demandOption([ 'database', 'source', 'config', 'archive' ], "example: node main.js scout --database='database/template.sqlite3' --source='myanimelist' --config='config/themes.json'")
+        },
+        handler: async (argv) => {
+            await (new Program(argv.database).runThemes(argv.source, argv.config, argv.archive));
+            Log.info('main : themes command completed...');
+        }
+    })
     .demandCommand()
     .help()
     .wrap(100)

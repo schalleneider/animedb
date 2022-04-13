@@ -22,7 +22,7 @@ class MyAnimeList {
     }
 
     async getAnimeByPersonalList(config, fromArchive = false) {
-        Log.warn('myanimelist : personal command is not supported : see help for more information');
+        Log.warn('myanimelist : personal command is not supported : see --help for more information');
     }
     
     async getAnimeByScout(config, fromArchive = false) {
@@ -31,9 +31,26 @@ class MyAnimeList {
         } 
         return this.getAnimeByScoutAPI(Config.parse(config));
     }
-    
+
+    async getAnimeThemes(config, fromArchive = false) {
+        if (fromArchive) {
+            return this.getAnimeThemesArchive(config)
+        } 
+        return this.getAnimeThemesAPI(Config.parse(config));
+    }
+
     async getAnimeBySeasonsArchive(config) {
         Log.debug(`myanimelist : using anime seasons archive : [ ${config} ]`);
+        return Config.parse(config);
+    }
+    
+    async getAnimeByScoutArchive(config) {
+        Log.debug(`myanimelist : using anime scout archive : [ ${config} ]`);
+        return Config.parse(config);
+    }
+    
+    async getAnimeThemesArchive(config) {
+        Log.debug(`myanimelist : using anime scout archive : [ ${config} ]`);
         return Config.parse(config);
     }
 
@@ -96,18 +113,13 @@ class MyAnimeList {
         return animeList;
     }
 
-    async getAnimeByScoutArchive(config) {
-        Log.debug(`myanimelist : using anime scout archive : [ ${config} ]`);
-        return Config.parse(config);
-    }
-
     async getAnimeByScoutAPI(criteria, saveToArchive = true) {
 
         let animeList = [];
 
         let baseUrl = "https://api.myanimelist.net/v2/anime";
 
-        let entries = await this.database.getAnilistToScout(criteria);
+        let entries = await this.database.getAniList(criteria);
         
         for (let aniListIndex = 0; aniListIndex < entries.length; aniListIndex++) {
             
@@ -162,19 +174,74 @@ class MyAnimeList {
         return animeList;
     }
 
+    async getAnimeThemesAPI(criteria, saveToArchive = true) {
+
+        let animeList = [];
+
+        let baseUrl = "https://api.myanimelist.net/v2/anime";
+
+        let entries = await this.database.getMyAnimeList(criteria);
+        
+        for (let aniListIndex = 0; aniListIndex < entries.length; aniListIndex++) {
+            
+            const currentEntry = entries[aniListIndex];
+
+            Log.info(`myanimelist : getting anime themes : [ ${currentEntry.Title} ]`);
+
+            let authHeader = JSON.parse(`{ "${this.auth.header}" : "${this.auth.value}" }`);
+
+            axiosRetry(axios, { retries: 3, retryDelay: (5 * 1000) });
+
+            const config = {
+                url: `${baseUrl}/${currentEntry.Id}`,
+                method: 'GET',
+                headers: authHeader,
+                params: {
+                    fields: 'id,title,start_date,end_date,media_type,status,num_episodes,start_season,opening_themes,ending_themes'
+                }
+            };
+
+            try {
+                
+                const response = await axios(config);
+
+                let parsedResponse = this.parseAnimeThemesResponse(response.data);
+
+                animeList = animeList.concat(parsedResponse);
+
+            } catch (error) {
+                if (error.isAxiosError) {
+                    Log.warn(error.response.data);
+                } else {
+                    throw error;
+                }
+            }
+        }
+
+        if (saveToArchive) {
+            Archive.save(animeList, 'myanimelist_themes');
+        }
+
+        return animeList;
+    }
+
     async saveAnime(animes) {
         Log.info(`myanimelist : saving anime : [ ${animes.length} entries ]`);
         await this.database.saveMyAnimeList(animes);
     }
     
     async savePersonal(animes) {
-        Log.warn('myanimelist : personal command is not supported : see help for more information');
+        Log.warn('myanimelist : personal command is not supported : see --help for more information');
     }
 
     async saveScout(animes) {
         Log.info(`myanimelist : saving scouted anime : [ ${animes.length} entries ]`);
         await this.database.saveMyAnimeList(animes);
         await this.database.saveScout(animes);
+    }
+
+    async saveThemes(animes) {
+        Log.info(`myanimelist : saving anime themes : [ ${animes.length} entries ]`);
     }
 
     parseAnimeNode(node) {
@@ -192,7 +259,7 @@ class MyAnimeList {
         return item;
     }
 
-    parseAnimeResponse(response, season) {
+    parseAnimeResponse(response) {
         let parsedResponse = [];
         let dataList = [...response.data];
         for (let index = 0; index < dataList.length; index++) {
@@ -215,6 +282,15 @@ class MyAnimeList {
             Log.trace(`myanimelist : parsed anime entry : [ ${item.id}, ${item.title}, ${item.season}, ${item.seasonYear} ]`);
         }
         return parsedResponse;
+    }
+
+    parseAnimeThemesResponse(response) {
+        let item = this.parseAnimeNode(response);
+        // themes properties
+        item.openings = Common.parseAnimeThemes(response.opening_themes, "OPENING");
+        item.endings = Common.parseAnimeThemes(response.ending_themes, "ENDING");
+        Log.trace(`myanimelist : parsed anime entry : [ ${item.id}, ${item.title}, ${item.season}, ${item.seasonYear} ]`);
+        return item;
     }
 }
 

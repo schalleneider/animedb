@@ -97,6 +97,31 @@ class Program {
             Log.fatal(error.stack);
         }
     }
+
+    async runThemes(source, config, fromArchive = false) {
+        try {
+            Log.info(`program : themes command : [ ${source}, ${config} ]`);
+
+            await this.database.init();
+
+            let facade = this.buildFacade(source);
+
+            let animes = await facade.getAnimeThemes(config, fromArchive);
+            
+            if (animes && animes.length > 0) {
+                await facade.saveThemes(animes);
+            } else {
+                Log.warn(`program : themes command : no data to save : [ ${source}, ${config} ]`);
+            }
+            
+        } catch (error) {
+            if (error.isAxiosError) {
+                Log.fatal(error.response.data.errors);
+            }
+            Log.fatal(error.message);
+            Log.fatal(error.stack);
+        }
+    }
 }
 
 export { Program };
