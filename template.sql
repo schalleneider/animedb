@@ -1,6 +1,7 @@
 CREATE TABLE "User" (
     "Id" INTEGER,
     "Name" TEXT,
+    "CreatedOn" TEXT,
     PRIMARY KEY("Id")
 );
 
@@ -8,6 +9,7 @@ CREATE TABLE "SourceType" (
     "Id" INTEGER,
     "Key" TEXT,
     "Name" TEXT,
+    "CreatedOn" TEXT,
     PRIMARY KEY("Id")
 );
 
@@ -16,6 +18,7 @@ CREATE TABLE "Source" (
     "KeyId" TEXT,
     "ExternalId" INTEGER,
     "SourceTypeId" INTEGER,
+    "CreatedOn" TEXT,
     PRIMARY KEY("Id"),
     UNIQUE("KeyId"),
     FOREIGN KEY("SourceTypeId") REFERENCES "SourceType"("Id")
@@ -37,6 +40,8 @@ CREATE TABLE "AniList" (
     "HasSequel" INTEGER,
     "Status" TEXT,
     "SiteUrl" TEXT,
+    "CreatedOn" TEXT,
+    "LastModifiedOn" TEXT,
     PRIMARY KEY("Id")
 );
 
@@ -50,12 +55,16 @@ CREATE TABLE "MyAnimeList" (
     "StartDate" TEXT,
     "EndDate" TEXT,
     "Status" TEXT,
+    "CreatedOn" TEXT,
+    "LastModifiedOn" TEXT,
     PRIMARY KEY("Id")
 );
 
 CREATE TABLE "AniList_MyAnimeList" (
     "AniListId" INTEGER,
     "MyAnimeListId" INTEGER,
+    "CreatedOn" TEXT,
+    "LastModifiedOn" TEXT,
     PRIMARY KEY("MyAnimeListId","AniListId"),
     FOREIGN KEY("MyAnimeListId") REFERENCES "MyAnimeList"("Id"),
     FOREIGN KEY("AniListId") REFERENCES "AniList"("Id")
@@ -65,6 +74,7 @@ CREATE TABLE "Personal" (
     "UserId" INTEGER,
     "AniListId" INTEGER,
     "Status" TEXT,
+    "CreatedOn" TEXT,
     PRIMARY KEY("AniListId","UserId"),
     FOREIGN KEY("AniListId") REFERENCES "AniList"("Id"),
     FOREIGN KEY("UserId") REFERENCES "User"("Id")
@@ -73,10 +83,13 @@ CREATE TABLE "Personal" (
 CREATE TABLE "Theme" (
     "Id" INTEGER,
     "KeyId" TEXT,
+	"Theme" TEXT,
     "Artist" TEXT,
     "Title" TEXT,
     "Type" TEXT,
     "Sequence" INTEGER,
+	"Algorithm" TEXT,
+    "CreatedOn" TEXT,
     PRIMARY KEY("Id"),
     FOREIGN KEY("KeyId") REFERENCES "Source"("KeyId")
 );
@@ -86,6 +99,7 @@ CREATE TABLE "Link" (
     "ThemeId" INTEGER,
     "Address" TEXT,
     "Rank" INTEGER,
+    "CreatedOn" TEXT,
     PRIMARY KEY("Id")
     FOREIGN KEY("ThemeId") REFERENCES "Theme"("Id")
 );

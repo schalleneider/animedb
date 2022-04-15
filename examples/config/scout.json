@@ -1,0 +1,6 @@
+{
+    "delay" : 1000,
+    "base" : "SELECT A.* FROM AniList A",
+    "criteria" : "WHERE A.Id NOT IN (SELECT AniListId FROM AniList_MyAnimeList) ORDER BY A.Id",
+    "limit" : "LIMIT 5"
+}

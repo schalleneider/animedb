@@ -1,15 +1,14 @@
 import fs from 'fs';
 import path from 'path';
-import moment from 'moment';
 
 import { Log } from './log.js';
+import { Common } from './common.js';
 
 class Archive {
 
     static save(data, category, unique = true) {
-        
         if (unique) {
-            let datepart = moment(new Date()).format('YYYYMMDD_HHmmss');
+            let datepart = Common.getMomentNow().format('YYYYMMDD_HHmmss');
             category = `${category}_${datepart}`;
         }
         let archivePath = path.resolve(`archive/${category}.json`);

@@ -6,10 +6,16 @@
   "exports": "./main.js",
   "scripts": {
     "start": "node main.js",
-    "start:seasons": "node main.js seasons --database='database/template.sqlite3' --source='anilist' --config='config/seasons.json'",
-    "start:seasons:archive": "node main.js seasons --database='database/template.sqlite3' --source='anilist' --config='archive/anilist_seasons_exemple.json' --archive",
-    "start:personal": "node main.js personal --database='database/template.sqlite3' --source='anilist' --config='config/personal.json'",
-    "start:personal:archive": "node main.js personal --database='database/template.sqlite3' --source='anilist' --config='archive/anilist_personal_exemple.json' --archive"
+    "start:seasons:anilist": "node main.js seasons --database='database/template.sqlite3' --source='anilist' --config='config/seasons.json'",
+    "start:seasons:myanimelist": "node main.js seasons --database='database/template.sqlite3' --source='myanimelist' --config='config/seasons.json'",
+    "start:personal:anilist": "node main.js personal --database='database/template.sqlite3' --source='anilist' --config='config/personal.json'",
+    "start:scout:myanimelist": "node main.js scout --database='database/template.sqlite3' --source='myanimelist' --config='config/scout.json'",
+    "start:themes:myanimelist": "node main.js themes --database='database/template.sqlite3' --source='myanimelist' --config='config/themes.json'",
+    "redo:seasons:anilist": "node main.js seasons --database='database/template.sqlite3' --source='anilist' --config='archive/anilist_seasons.json' --archive",
+    "redo:seasons:myanimelist": "node main.js seasons --database='database/template.sqlite3' --source='myanimelist' --config='archive/myanimelist_seasons.json' --archive",
+    "redo:personal:anilist": "node main.js personal --database='database/template.sqlite3' --source='anilist' --config='archive/anilist_personal.json' --archive",
+    "redo:scout:myanimelist": "node main.js scout --database='database/template.sqlite3' --source='myanimelist' --config='archive/myanimelist_scout.json' --archive",
+    "redo:themes:myanimelist": "node main.js themes --database='database/template.sqlite3' --source='myanimelist' --config='archive/myanimelist_themes.json' --archive"
   },
   "author": "wschneider",
   "license": "ISC",

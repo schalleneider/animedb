@@ -3,6 +3,7 @@ import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
 
 import { Log } from './log.js';
+import { Common } from './common.js';
 import { Prompt } from './prompt.js';
 
 class Database {
@@ -47,7 +48,7 @@ class Database {
         try {
 
             const result = await this.selectAll({
-                query: `${criteria.base} ${criteria.criteria}`
+                query: `${criteria.base} ${criteria.criteria} ${criteria.limit}`
             });
 
             if (result.length > 0) {
@@ -67,7 +68,7 @@ class Database {
         try {
 
             const result = await this.selectAll({
-                query: `${criteria.base} ${criteria.criteria}`
+                query: `${criteria.base} ${criteria.criteria} ${criteria.limit}`
             });
 
             if (result.length > 0) {
@@ -94,14 +95,15 @@ class Database {
 
         if (currentSourceType === undefined) {
 
-            let mustCreate = await Prompt.askConfirmation(`[ ${sourceType.key} : ${sourceType.name} ] source type not found in the database. must be created ? otherwise anime data will be lost`);
+            let mustCreate = await Prompt.askConfirmation(`[ ${sourceType.key} : ${sourceType.name} ] source type was not found in the database. must be created, otherwise fetched anime data will be lost. proceed ?`);
             
             if (mustCreate) {
                 let newSourceType = await this.exec({
-                    query: `INSERT INTO SourceType VALUES (NULL, ?, ?)`,
+                    query: `INSERT INTO SourceType (Id, Key, Name, CreatedOn) VALUES (NULL, ?, ?, ?)`,
                     params: [
                         sourceType.key,
-                        sourceType.name
+                        sourceType.name,
+                        Common.getMomentNowFormat()
                     ]
                 });
 
@@ -119,16 +121,40 @@ class Database {
 
         try {
             await this.exec({
-                query: `INSERT INTO Source VALUES (NULL, ?, ?, ?)`,
+                query: `INSERT INTO Source (Id, KeyId, ExternalId, SourceTypeId, CreatedOn) VALUES (NULL, ?, ?, ?, ?)`,
                 params: [
                     `${currentSourceType.Key}-${externalId}`,
                     externalId,
                     currentSourceType.Id,
+                    Common.getMomentNowFormat()
                 ]
             });
 
         } catch (error) {
-            Log.error(`database : error updating source : [ ${externalId}, ${sourceType.key}, ${sourceType.name} ]`);
+            Log.error(`database : error creating source : [ ${externalId}, ${sourceType.key}, ${sourceType.name} ]`);
+            Log.error(error.message);
+            Log.error(error.stack);
+        }
+    }
+
+    async createTheme(theme, keyId) {
+        try {
+            await this.exec({
+                query: `INSERT INTO Theme (Id, KeyId, Theme, Artist, Title, Type, Sequence, Algorithm, CreatedOn) VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                params: [
+                    `${keyId}`,
+                    theme.theme,
+                    theme.artist,
+                    theme.title,
+                    theme.type,
+                    theme.sequence,
+                    theme.algorithm,
+                    Common.getMomentNowFormat()
+                ]
+            });
+
+        } catch (error) {
+            Log.error(`database : error creating theme : [ ${keyId}, ${theme.title}, ${theme.artist} ]`);
             Log.error(error.message);
             Log.error(error.stack);
         }
@@ -154,7 +180,7 @@ class Database {
                 if (currentExists) {
 
                     await this.exec({
-                        query: `UPDATE AniList SET Title = ?, Type = ?, Format = ?, Season = ?, SeasonYear = ?, Genres = ?, NumberOfEpisodes = ?, StartDate = ?, StartWeekNumber = ?, StartDayOfWeek = ?, HasPrequel = ?, HasSequel = ?, Status = ?, SiteUrl = ? WHERE Id = ?`, 
+                        query: `UPDATE AniList SET Title = ?, Type = ?, Format = ?, Season = ?, SeasonYear = ?, Genres = ?, NumberOfEpisodes = ?, StartDate = ?, StartWeekNumber = ?, StartDayOfWeek = ?, HasPrequel = ?, HasSequel = ?, Status = ?, SiteUrl = ?, LastModifiedOn = ? WHERE Id = ?`, 
                         params: [
                             currentAnime.title,
                             currentAnime.type,
@@ -170,13 +196,14 @@ class Database {
                             currentAnime.hasSequel,
                             currentAnime.status,
                             currentAnime.siteUrl,
+                            Common.getMomentNowFormat(),
                             currentAnime.id
                         ]
                     });
                     execResults.updated++;
                 } else {
                     await this.exec({
-                        query: `INSERT INTO AniList (Id, Title, Type, Format, Season, SeasonYear, Genres, NumberOfEpisodes, StartDate, StartWeekNumber, StartDayOfWeek, HasPrequel, HasSequel, Status, SiteUrl) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                        query: `INSERT INTO AniList (Id, Title, Type, Format, Season, SeasonYear, Genres, NumberOfEpisodes, StartDate, StartWeekNumber, StartDayOfWeek, HasPrequel, HasSequel, Status, SiteUrl, CreatedOn, LastModifiedOn) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                         params: [
                             currentAnime.id,
                             currentAnime.title,
@@ -192,7 +219,9 @@ class Database {
                             currentAnime.hasPrequel,
                             currentAnime.hasSequel,
                             currentAnime.status,
-                            currentAnime.siteUrl
+                            currentAnime.siteUrl,
+                            Common.getMomentNowFormat(),
+                            Common.getMomentNowFormat()
                         ]
                     });
                     await this.createSource(currentAnime.id, { key: "ANI", name: "AniList" });
@@ -226,13 +255,14 @@ class Database {
 
             if (user === undefined) {
 
-                let mustCreate = await Prompt.askConfirmation(`[ ${animes[0].userName} ] user not found in the database. must be created ? otherwise personal data will be lost`);
+                let mustCreate = await Prompt.askConfirmation(`[ ${animes[0].userName} ] user was not found in the database. must be created, otherwise fetched personal data will be lost. proceed ?`);
                 
                 if (mustCreate) {
                     let newUser = await this.exec({
-                        query: `INSERT INTO User VALUES (NULL, ?)`,
+                        query: `INSERT INTO User (Id, Name, CreatedOn) VALUES (NULL, ?, ?)`,
                         params: [
-                            animes[0].userName
+                            animes[0].userName,
+                            Common.getMomentNowFormat()
                         ]
                     });
 
@@ -262,11 +292,12 @@ class Database {
                 
                 try {
                     await this.exec({
-                        query: `INSERT INTO Personal (UserId, AniListId, Status) VALUES (?, ?, ?)`,
+                        query: `INSERT INTO Personal (UserId, AniListId, Status, CreatedOn) VALUES (?, ?, ?, ?)`,
                         params: [
                             user.Id,
                             currentAnime.id,
-                            currentAnime.personalStatus
+                            currentAnime.personalStatus,
+                            Common.getMomentNowFormat()
                         ]
                     });
                     execResults.added++;
@@ -310,7 +341,7 @@ class Database {
                 if (currentExists) {
 
                     await this.exec({
-                        query: `UPDATE MyAnimeList SET Title = ?, Type = ?, Season = ?, SeasonYear = ?, NumberOfEpisodes = ?, StartDate = ?, EndDate = ?, Status = ? WHERE Id = ?`, 
+                        query: `UPDATE MyAnimeList SET Title = ?, Type = ?, Season = ?, SeasonYear = ?, NumberOfEpisodes = ?, StartDate = ?, EndDate = ?, Status = ?, LastModifiedOn = ? WHERE Id = ?`, 
                         params: [
                             currentAnime.title,
                             currentAnime.type,
@@ -320,13 +351,14 @@ class Database {
                             currentAnime.startDate,
                             currentAnime.endDate,
                             currentAnime.status,
+                            Common.getMomentNowFormat(),
                             currentAnime.id
                         ]
                     });
                     execResults.updated++;
                 } else {
                     await this.exec({
-                        query: `INSERT INTO MyAnimeList (Id, Title, Type, Season, SeasonYear, NumberOfEpisodes, StartDate, EndDate, Status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                        query: `INSERT INTO MyAnimeList (Id, Title, Type, Season, SeasonYear, NumberOfEpisodes, StartDate, EndDate, Status, CreatedOn, LastModifiedOn) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                         params: [
                             currentAnime.id,
                             currentAnime.title,
@@ -336,7 +368,9 @@ class Database {
                             currentAnime.numberOfEpisodes,
                             currentAnime.startDate,
                             currentAnime.endDate,
-                            currentAnime.status
+                            currentAnime.status,
+                            Common.getMomentNowFormat(),
+                            Common.getMomentNowFormat()
                         ]
                     });
                     await this.createSource(currentAnime.id, { key: "MAL", name: "MyAnimeList" });
@@ -375,19 +409,22 @@ class Database {
                 if (currentExists) {
 
                     await this.exec({
-                        query: `UPDATE AniList_MyAnimeList SET MyAnimeListId = ? WHERE AniListId = ?`, 
+                        query: `UPDATE AniList_MyAnimeList SET MyAnimeListId = ?, LastModifiedOn = ? WHERE AniListId = ?`, 
                         params: [
                             currentAnime.id,
+                            Common.getMomentNowFormat(),
                             currentAnime.aniListId
                         ]
                     });
                     execResults.updated++;
                 } else {
                     await this.exec({
-                        query: `INSERT INTO AniList_MyAnimeList (AniListId, MyAnimeListId) VALUES (?, ?)`,
+                        query: `INSERT INTO AniList_MyAnimeList (AniListId, MyAnimeListId, CreatedOn, LastModifiedOn) VALUES (?, ?, ?, ?)`,
                         params: [
                             currentAnime.aniListId,
-                            currentAnime.id
+                            currentAnime.id,
+                            Common.getMomentNowFormat(),
+                            Common.getMomentNowFormat()
                         ]
                     });
                     execResults.added++;
@@ -403,6 +440,81 @@ class Database {
         await this.commit();
 
         Log.info(`database : scout updated : [ added: ${execResults.added}, updated: ${execResults.updated}, deleted: ${execResults.deleted}, errors: ${execResults.errors} ]`);
+    }
+
+    async saveThemes(animes) {
+
+        let execResults = { added: 0, updated: 0, deleted: 0, errors: 0 };
+
+        await this.begin();
+
+        for (let animeIndex = 0; animeIndex < animes.length; animeIndex++) {
+            
+            const currentAnime = animes[animeIndex];
+            let createThemes = true;
+
+            try {
+
+                let existingThemes = await this.select({
+                    query: `SELECT S.KeyId, COUNT(T.Id) Count FROM Source S INNER JOIN SourceType ST ON S.SourceTypeId = ST.Id LEFT JOIN Theme T ON S.KeyId = T.KeyId WHERE ST.Name = ? AND S.ExternalId = ?`, 
+                    params: [ 
+                        'MyAnimeList',
+                        currentAnime.id
+                    ]
+                });
+
+                if (existingThemes === undefined) {
+                    throw new Error(`Source for [ ${currentAnime.id} ${currentAnime.title} ] not found.`);
+                }
+    
+                if (existingThemes.Count > 0) {
+    
+                    let mustDelete = await Prompt.askConfirmation(`[ ${existingThemes.Count} ] themes were found for the anime [ ${existingThemes.KeyId} : ${currentAnime.title} ]. themes and link data related to this anime must be deleted. proceed ?`);
+                    
+                    if (mustDelete) {
+                        
+                        let linkCleanupResult = await this.exec({
+                            query: `DELETE FROM Link WHERE ThemeId IN (SELECT Id FROM Theme WHERE KeyId = ?)`,
+                            params: [
+                                existingThemes.KeyId
+                            ]
+                        });
+                        execResults.deleted += linkCleanupResult.changes;
+
+                        let themeCleanupResult = await this.exec({
+                            query: `DELETE FROM Theme WHERE KeyId = ?`,
+                            params: [
+                                existingThemes.KeyId
+                            ]
+                        });
+                        execResults.deleted += themeCleanupResult.changes;
+                    } else {
+                        createThemes = false;
+                    }
+                }
+
+                if (createThemes) {
+                    for (let openingIndex = 0; openingIndex < currentAnime.openings.length; openingIndex++) {
+                        await this.createTheme(currentAnime.openings[openingIndex], existingThemes.KeyId);
+                        execResults.added++;
+                    }
+
+                    for (let endingIndex = 0; endingIndex < currentAnime.endings.length; endingIndex++) {
+                        await this.createTheme(currentAnime.endings[endingIndex], existingThemes.KeyId);
+                        execResults.added++;
+                    }
+                }
+            } catch (error) {
+                Log.error(`database : error updating themes : [ ${currentAnime.id}, ${currentAnime.title} ]`);
+                Log.error(error.message);
+                Log.error(error.stack);
+                execResults.errors++;
+            }
+        }
+
+        await this.commit();
+
+        Log.info(`database : themes updated : [ added: ${execResults.added}, updated: ${execResults.updated}, deleted: ${execResults.deleted}, errors: ${execResults.errors} ]`);
     }
 }
 

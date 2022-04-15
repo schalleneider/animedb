@@ -54,15 +54,15 @@ class MyAnimeList {
         return Config.parse(config);
     }
 
-    async getAnimeBySeasonsAPI(seasons, saveToArchive = true) {
+    async getAnimeBySeasonsAPI(criteria, saveToArchive = true) {
 
         let animeList = [];
 
         let baseUrl = "https://api.myanimelist.net/v2/anime/season";
 
-        for (let seasonIndex = 0; seasonIndex < seasons.length; seasonIndex++) {
+        for (let seasonIndex = 0; seasonIndex < criteria.seasons.length; seasonIndex++) {
             
-            const currentSeason = seasons[seasonIndex];
+            const currentSeason = criteria.seasons[seasonIndex];
 
             Log.info(`myanimelist : getting anime season : [ ${currentSeason.season}, ${currentSeason.year} ]`);
 
@@ -104,6 +104,8 @@ class MyAnimeList {
             }
 
             animeList = animeList.concat(seasonContent);
+            
+            await Common.sleep(criteria.delay);
         }
 
         if (saveToArchive) {
@@ -125,7 +127,7 @@ class MyAnimeList {
             
             const currentEntry = entries[aniListIndex];
 
-            Log.info(`myanimelist : scouting anime : [ ${currentEntry.Title} ]`);
+            Log.info(`myanimelist : scouting anime : [ ${currentEntry.Title}, ${currentEntry.StartDate} ]`);
 
             let authHeader = JSON.parse(`{ "${this.auth.header}" : "${this.auth.value}" }`);
 
@@ -136,8 +138,8 @@ class MyAnimeList {
                 method: 'GET',
                 headers: authHeader,
                 params: {
-                    q : currentEntry.Title,
-                    limit: 3,
+                    q : currentEntry.Title.replace(/[^\w\s]/gi, ''),
+                    limit: 20,
                     fields: 'id,title,start_date,end_date,media_type,status,num_episodes,start_season'
                 }
             };
@@ -148,23 +150,26 @@ class MyAnimeList {
 
                 let parsedResponse = this.parseAnimeResponse(response.data);
 
-                let filteredContent = parsedResponse.find((item) => item.title === currentEntry.Title);
+                let filteredContent = parsedResponse.find((item) => {
+                    let diff = Common.subtractMoments(Common.getMoment(item.startDate), Common.getMoment(currentEntry.StartDate), "days");
+                    return Math.abs(diff) <= 7;
+                });
 
-                if (filteredContent === undefined) {
-                    filteredContent = parsedResponse[0];
+                if (filteredContent) {
+                    filteredContent.aniListId = currentEntry.Id;
+                    animeList = animeList.concat(filteredContent);
+                } else {
+                    Log.warn(`myanimelist : no valid animes scouted : [ ${currentEntry.Title},  ${currentEntry.StartDate} ]`);
                 }
-
-                filteredContent.aniListId = currentEntry.Id;
-
-                animeList = animeList.concat(filteredContent);
-
             } catch (error) {
                 if (error.isAxiosError) {
-                    Log.warn(error.response.data);
+                    Log.warn(`[ ${currentEntry.Title} ] : ${JSON.stringify(error.response.data)}`);
                 } else {
-                    throw error;
+                    Log.error(`[ ${currentEntry.Title} ] : ${error.message}`);
                 }
             }
+            
+            await Common.sleep(criteria.delay);
         }
 
         if (saveToArchive) {
@@ -211,11 +216,13 @@ class MyAnimeList {
 
             } catch (error) {
                 if (error.isAxiosError) {
-                    Log.warn(error.response.data);
+                    Log.warn(`[ ${currentEntry.Title} ] : ${JSON.stringify(error.response.data)}`);
                 } else {
-                    throw error;
+                    Log.error(`[ ${currentEntry.Title} ] : ${error.message}`);
                 }
             }
+
+            await Common.sleep(criteria.delay);
         }
 
         if (saveToArchive) {
@@ -242,19 +249,21 @@ class MyAnimeList {
 
     async saveThemes(animes) {
         Log.info(`myanimelist : saving anime themes : [ ${animes.length} entries ]`);
+        await this.database.saveMyAnimeList(animes);
+        await this.database.saveThemes(animes);
     }
 
     parseAnimeNode(node) {
         let item = {
             id : node.id,
             title : node.title,
-            type : node.media_type.toUpperCase(),
-            season: node.start_season.season.toUpperCase(),
-            seasonYear: node.start_season.year,
+            type : node?.media_type.toUpperCase(),
+            season: node.start_season?.season.toUpperCase(),
+            seasonYear: node.start_season?.year,
             numberOfEpisodes: node.num_episodes,
             startDate: node.start_date,
             endDate: node.end_date,
-            status: node.status.toUpperCase()
+            status: node?.status.toUpperCase()
         };
         return item;
     }

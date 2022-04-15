@@ -1,34 +1,35 @@
+import moment from 'moment';
+
 class Common {
+
+    static sleep(miliseconds) {
+        return new Promise((resolve) => {
+            setTimeout(resolve, miliseconds);
+        });
+    }
 
     static getMediaSesonValue(season) {
         return season.toUpperCase();
     }
 
-    static getDate(year, month, day) {
-        return new Date(year, (month - 1), day);
+    static getMomentNow() {
+        return moment(new Date());
+    }
+
+    static getMomentNowFormat() {
+        return Common.getMomentNow().format();
+    }
+
+    static getMoment(year, month, day) {
+        return Common.getMoment(`${year}-${month}-${day}`);
     }
     
-    static getDayOfWeek(date) {
-        return (date.getDay() + 6) % 7;
+    static getMoment(input) {
+        return moment(input, 'YYYY-MM-DD');
     }
-    
-    static getDayOfWeekLiteral(dayOfWeek) {
-        switch (dayOfWeek) {
-            case 0: return "Monday";
-            case 1: return "Tuesday";
-            case 2: return "Wednesday";
-            case 3: return "Thursday";
-            case 4: return "Friday";
-            case 5: return "Saturday";
-            case 6: return "Sunday";
-        }
-    }
-    
-    static getWeekNumber(date) {
-        date = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-        date.setUTCDate(date.getUTCDate() + 4 - (date.getUTCDay() || 7));
-        var yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
-        return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+
+    static subtractMoments(moment1, moment2, unitOfTime) {
+        return moment1.diff(moment2, unitOfTime)
     }
     
     static hasPrequel(relations) {
@@ -40,56 +41,87 @@ class Common {
     }
 
     static parseAnimeThemes(themes, type) {
-        if (themes === undefined) {
-            return [];
-        }
-        const regex = /^((#*([0-9]*):*)(.+))( by )([^(\n]+)(\([\S ]+\).?)*$/;
-        let songs = [];
-        for (let index = 0; index < themes.length; index++) {
-            const current = themes[index];
-            const match = regex.exec(current.text.trim());
-            if (match) {
-                const song = {
-                    title : Common.parseThemeTitle(match[4].trim()),
-                    artist : Common.parseThemeArtist(match[6].trim()),
-                    type : type,
-                    sequence : Common.parseThemeSequence(match[3]),
-                };
-                songs.push(song);
-            } else {
-                const song = {
-                    title : current.text.trim(),
-                    artist : '',
-                    type : type,
-                    sequence : -1,
-                };
-                songs.push(song);
+        
+        let parsedThemes = [];
+        
+        if (themes) {
+
+            const regexDefault = /^((#)?)(([0-9]+)?)((:)?)(([ "]+)?)((.)*?)((\((.+)\))?)(("+)?)( (b|B)y )((.)*?)((\((.+)\))?)$/;
+            const regexNoMatch = /^((#)?)(([0-9]+)?)((:)?)(([ "]+)?)((.)*?)((\((.+)\))?)(" )((.)*?)((\((.+)\))?)$/;
+            
+            for (let index = 0; index < themes.length; index++) {
+
+                const current = themes[index];
+                const currentTheme = current.text.trim();
+
+                // default algorithm
+                const matchDefault = regexDefault.exec(currentTheme);
+                if (matchDefault) {
+                    parsedThemes.push(Common.parseThemeDefault(matchDefault, type, currentTheme));
+                } else {
+                    // nomatch algorithm
+                    const matchNoMatch = regexNoMatch.exec(currentTheme);
+                    if (matchNoMatch) {
+                        parsedThemes.push(Common.parseThemeNoMatch(matchNoMatch, type, currentTheme));
+                    } else {
+                        parsedThemes.push(Common.unparsedTheme(type, currentTheme));
+                    }
+                }
             }
         }
-        return songs;
+        return parsedThemes;
+    }
+
+    static parseThemeDefault(match, type, theme) {
+        return {
+            theme : theme,
+            title : Common.parseThemeTitle(match[9]),
+            artist : Common.parseThemeArtist(match[18], match[22]),
+            type : type,
+            sequence : Common.parseThemeSequence(match[4]),
+            algorithm : 'DEFAULT'
+        };
+    }
+    
+    static parseThemeNoMatch(match, type, theme) {
+        return {
+            theme : theme,
+            title : Common.parseThemeTitle(match[9]),
+            artist : Common.parseThemeArtist(match[15]),
+            type : type,
+            sequence : Common.parseThemeSequence(match[4]),
+            algorithm : 'NO_MATCH'
+        };
+    }
+
+    static unparsedTheme(type, theme) {
+        return {
+            theme : theme,
+            title : '',
+            artist : '',
+            type : type,
+            sequence : 0,
+            algorithm : 'ERROR'
+        };
     }
 
     static parseThemeSequence(sequence) {
-        if (sequence === '') {
+        if (sequence === undefined || sequence === '') {
             return 1;
         }
         return parseInt(sequence);
     }
 
     static parseThemeTitle(title) {
-        if (title[0] === '\"') {
-            title = title.substr(1, title.length - 1);
-        }
-        if (title[title.length - 1] === '\"') {
-            title = title.substr(0, title.length -1);
-        }
-        return title;
+        return title.trim();
     }
 
-    static parseThemeArtist(artist) {
-        return artist;
+    static parseThemeArtist(artist, alternative = '') {
+        if (artist === undefined || artist === '') {
+            return alternative.trim();
+        }
+        return artist.trim();
     }
-
 }
 
 export { Common }

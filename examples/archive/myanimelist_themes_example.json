@@ -1,0 +1,70 @@
+[
+    {
+        "id": 48365,
+        "title": "Youkai Watch ♪",
+        "type": "TV",
+        "season": "SPRING",
+        "seasonYear": 2021,
+        "numberOfEpisodes": 0,
+        "startDate": "2021-04-09",
+        "status": "CURRENTLY_AIRING",
+        "openings": [
+            {
+                "theme": "\"Kerakeraho- no Uta (ケラケラホーのうた)\" by King Cream Soda",
+                "title": "Kerakeraho- no Uta",
+                "artist": "King Cream Soda",
+                "type": "OPENING",
+                "sequence": 1,
+                "algorithm": "DEFAULT"
+            }
+        ],
+        "endings": [
+            {
+                "theme": "\"Youkai Taisou Daiichi (ようかい体操第一)\" by Jiba-nyan Koma-san YoshikiRisa♪ (ジバニャンコマさんヨシキりさ♪)",
+                "title": "Youkai Taisou Daiichi",
+                "artist": "Jiba-nyan Koma-san YoshikiRisa♪",
+                "type": "ENDING",
+                "sequence": 1,
+                "algorithm": "DEFAULT"
+            }
+        ]
+    },
+    {
+        "id": 49285,
+        "title": "Waccha PriMagi!",
+        "type": "TV",
+        "season": "FALL",
+        "seasonYear": 2021,
+        "numberOfEpisodes": 0,
+        "startDate": "2021-10-03",
+        "status": "CURRENTLY_AIRING",
+        "openings": [
+            {
+                "theme": "#1: \"Dreaming Sound \" by Anna Suzuki (鈴木杏奈)",
+                "title": "Dreaming Sound",
+                "artist": "Anna Suzuki",
+                "type": "OPENING",
+                "sequence": 1,
+                "algorithm": "DEFAULT"
+            },
+            {
+                "theme": "#2: \"Chasing the dream\" by Anna Suzuki (鈴木杏奈)",
+                "title": "Chasing the dream",
+                "artist": "Anna Suzuki",
+                "type": "OPENING",
+                "sequence": 2,
+                "algorithm": "DEFAULT"
+            }
+        ],
+        "endings": [
+            {
+                "theme": "\"Magical Future\" by Matsuri Hibino (CV: Chinatsu Hirose), Myamu (CV: Riko Koike)",
+                "title": "Magical Future",
+                "artist": "Matsuri Hibino",
+                "type": "ENDING",
+                "sequence": 1,
+                "algorithm": "DEFAULT"
+            }
+        ]
+    }
+]

@@ -44,7 +44,7 @@ class AniList {
         return Config.parse(config);
     }
 
-    async getAnimeBySeasonsAPI(seasons, saveToArchive = true) {
+    async getAnimeBySeasonsAPI(criteria, saveToArchive = true) {
 
         let animeList = [];
 
@@ -87,9 +87,9 @@ class AniList {
             }
         }`;
 
-        for (let seasonIndex = 0; seasonIndex < seasons.length; seasonIndex++) {
+        for (let seasonIndex = 0; seasonIndex < criteria.seasons.length; seasonIndex++) {
             
-            const currentSeason = seasons[seasonIndex];
+            const currentSeason = criteria.seasons[seasonIndex];
 
             Log.info(`anilist : getting anime season : [ ${currentSeason.season}, ${currentSeason.year} ]`);
 
@@ -129,6 +129,8 @@ class AniList {
             }
 
             animeList = animeList.concat(seasonContent);
+            
+            await Common.sleep(criteria.delay);
         }
 
         if (saveToArchive) {
@@ -138,7 +140,7 @@ class AniList {
         return animeList;
     } 
 
-    async getAnimeByPersonalListAPI(personal, saveToArchive = true) {
+    async getAnimeByPersonalListAPI(criteria, saveToArchive = true) {
 
         let animeList = [];
 
@@ -183,7 +185,7 @@ class AniList {
             }
         }`;
 
-        Log.info(`anilist : getting anime personal : [ ${personal.userName} ]`);
+        Log.info(`anilist : getting anime personal : [ ${criteria.userName} ]`);
 
         let hasNextChunk = true;
         let currentChunk = 1;
@@ -201,7 +203,7 @@ class AniList {
                 data: {
                     query: graphql,
                     variables: { 
-                        userName: personal.userName,
+                        userName: criteria.userName,
                         currentChunk: currentChunk 
                     }
                 }
@@ -215,10 +217,12 @@ class AniList {
 
             hasNextChunk = response.data.data.MediaListCollection.hasNextChunk;
             currentChunk++;
+
+            await Common.sleep(criteria.delay);
         }
 
         if (saveToArchive) {
-            Archive.save(animeList, `anilist_personal_${personal.userName}`, false);
+            Archive.save(animeList, `anilist_personal_${criteria.userName}`, false);
         }
 
         return animeList;
@@ -244,7 +248,7 @@ class AniList {
     }
 
     parseAnimeMedia(media) {
-        let currentMediaStartDate = Common.getDate(media.startDate.year, media.startDate.month, media.startDate.day);
+        let currentMediaStartMoment = Common.getMoment(media.startDate.year, media.startDate.month, media.startDate.day);
         let item = {
             id: media.id,
             title: media.title.romaji,
@@ -254,9 +258,9 @@ class AniList {
             seasonYear: media.seasonYear,
             genres: media.genres.join(','),
             numberOfEpisodes: media.episodes,
-            startDate: currentMediaStartDate.toISOString(),
-            startWeekNumber: Common.getWeekNumber(currentMediaStartDate),
-            startDayOfWeek: Common.getDayOfWeekLiteral(Common.getDayOfWeek(currentMediaStartDate)),
+            startDate: currentMediaStartMoment.format("YYYY-MM-DD"),
+            startWeekNumber: currentMediaStartMoment.format("W"),
+            startDayOfWeek: currentMediaStartMoment.format("dddd"),
             hasPrequel: Common.hasPrequel(media.relations.edges),
             hasSequel: Common.hasSequel(media.relations.edges),
             status: media.status,
