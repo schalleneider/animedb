@@ -6,7 +6,7 @@ import { Common } from './common.js';
 
 class Archive {
 
-    static save(data, category, unique = true) {
+    static save(data, category, unique = false) {
         if (unique) {
             let datepart = Common.getMomentNow().format('YYYYMMDD_HHmmss');
             category = `${category}_${datepart}`;

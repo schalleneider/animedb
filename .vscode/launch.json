@@ -2,26 +2,8 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "command": "npm run start:seasons",
-            "name": "run start:seasons",
-            "request": "launch",
-            "type": "node-terminal"
-        },
-        {
-            "command": "npm run start:seasons:archive",
-            "name": "run start:seasons:archive",
-            "request": "launch",
-            "type": "node-terminal"
-        },
-        {
-            "command": "npm run start:personal",
-            "name": "run start:personal",
-            "request": "launch",
-            "type": "node-terminal"
-        },
-        {
-            "command": "npm run start:personal:archive",
-            "name": "run start:personal:archive",
+            "command": "npm run start",
+            "name": "run start",
             "request": "launch",
             "type": "node-terminal"
         }

@@ -31,6 +31,10 @@ class Common {
     static subtractMoments(moment1, moment2, unitOfTime) {
         return moment1.diff(moment2, unitOfTime)
     }
+
+    static convertISO8601ToSeconds(input) {
+        return moment.duration(input, moment.ISO_8601).asSeconds();
+    }
     
     static hasPrequel(relations) {
         return relations.some(r => r.relationType == "PREQUEL");

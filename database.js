@@ -56,7 +56,7 @@ class Database {
             }
 
         } catch (error) {
-            Log.error(`database : error scouting anilist : [ ${criteria} ]`);
+            Log.error(`database : error retrieving anilist : [ ${criteria} ]`);
             Log.error(error.message);
             Log.error(error.stack);
         }
@@ -76,7 +76,27 @@ class Database {
             }
 
         } catch (error) {
-            Log.error(`database : error scouting anilist : [ ${criteria} ]`);
+            Log.error(`database : error retrieving myanimelist : [ ${criteria} ]`);
+            Log.error(error.message);
+            Log.error(error.stack);
+        }
+
+        return [];
+    }
+
+    async getThemes(criteria) {
+        try {
+
+            const result = await this.selectAll({
+                query: `${criteria.base} ${criteria.criteria} ${criteria.limit}`
+            });
+
+            if (result.length > 0) {
+                return result;
+            }
+
+        } catch (error) {
+            Log.error(`database : error retrieving themes : [ ${criteria} ]`);
             Log.error(error.message);
             Log.error(error.stack);
         }
@@ -180,7 +200,7 @@ class Database {
                 if (currentExists) {
 
                     await this.exec({
-                        query: `UPDATE AniList SET Title = ?, Type = ?, Format = ?, Season = ?, SeasonYear = ?, Genres = ?, NumberOfEpisodes = ?, StartDate = ?, StartWeekNumber = ?, StartDayOfWeek = ?, HasPrequel = ?, HasSequel = ?, Status = ?, SiteUrl = ?, LastModifiedOn = ? WHERE Id = ?`, 
+                        query: `UPDATE AniList SET Title = ?, Type = ?, Format = ?, Season = ?, SeasonYear = ?, Genres = ?, NumberOfEpisodes = ?, StartDate = ?, StartWeekNumber = ?, StartDayOfWeek = ?, HasPrequel = ?, HasSequel = ?, Status = ?, Address = ?, LastModifiedOn = ? WHERE Id = ?`, 
                         params: [
                             currentAnime.title,
                             currentAnime.type,
@@ -195,7 +215,7 @@ class Database {
                             currentAnime.hasPrequel,
                             currentAnime.hasSequel,
                             currentAnime.status,
-                            currentAnime.siteUrl,
+                            currentAnime.address,
                             Common.getMomentNowFormat(),
                             currentAnime.id
                         ]
@@ -203,7 +223,7 @@ class Database {
                     execResults.updated++;
                 } else {
                     await this.exec({
-                        query: `INSERT INTO AniList (Id, Title, Type, Format, Season, SeasonYear, Genres, NumberOfEpisodes, StartDate, StartWeekNumber, StartDayOfWeek, HasPrequel, HasSequel, Status, SiteUrl, CreatedOn, LastModifiedOn) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                        query: `INSERT INTO AniList (Id, Title, Type, Format, Season, SeasonYear, Genres, NumberOfEpisodes, StartDate, StartWeekNumber, StartDayOfWeek, HasPrequel, HasSequel, Status, Address, CreatedOn, LastModifiedOn) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                         params: [
                             currentAnime.id,
                             currentAnime.title,
@@ -219,7 +239,7 @@ class Database {
                             currentAnime.hasPrequel,
                             currentAnime.hasSequel,
                             currentAnime.status,
-                            currentAnime.siteUrl,
+                            currentAnime.address,
                             Common.getMomentNowFormat(),
                             Common.getMomentNowFormat()
                         ]
@@ -515,6 +535,83 @@ class Database {
         await this.commit();
 
         Log.info(`database : themes updated : [ added: ${execResults.added}, updated: ${execResults.updated}, deleted: ${execResults.deleted}, errors: ${execResults.errors} ]`);
+    }
+
+    async saveMedias(medias) {
+
+        let execResults = { added: 0, updated: 0, deleted: 0, errors: 0 };
+
+        await this.begin();
+
+        for (let mediaIndex = 0; mediaIndex < medias.length; mediaIndex++) {
+            
+            const currentMedia = medias[mediaIndex];
+
+            try {
+
+                const currentExists = await this.select({
+                    query: `SELECT Id FROM Media WHERE KeyId = ?`, 
+                    params: [ currentMedia.keyId ]
+                });
+                
+                if (currentExists) {
+
+                    await this.exec({
+                        query: `UPDATE Media SET ThemeId = ?, KeyId = ?, Title = ?, Description = ?, Duration = ?, DurationSeconds = ?, NumberOfViews = ?, NumberOfLikes = ?, IsLicensed = ?, IsFirstResult = ?, IsBestRank = ?, Rank = ?, Address = ?, LastModifiedOn = ? WHERE Id = ?`,
+                        params: [
+                            currentMedia.themeId,
+                            currentMedia.keyId,
+                            currentMedia.title,
+                            currentMedia.description,
+                            currentMedia.duration,
+                            currentMedia.durationSeconds,
+                            currentMedia.numberOfViews,
+                            currentMedia.numberOfLikes,
+                            currentMedia.isLicensed,
+                            currentMedia.isFirstResult,
+                            currentMedia.isBestRank,
+                            currentMedia.rank,
+                            currentMedia.address,
+                            Common.getMomentNowFormat(),
+                            currentMedia.id
+                        ]
+                    });
+                    execResults.updated++;
+                } else {
+                    await this.exec({
+                        query: `INSERT INTO Media (Id, ThemeId, KeyId, Title, Description, Duration, DurationSeconds, NumberOfViews, NumberOfLikes, IsLicensed, IsFirstResult, IsBestRank, Rank, Address, CreatedOn, LastModifiedOn) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                        params: [
+                            currentMedia.id,
+                            currentMedia.themeId,
+                            currentMedia.keyId,
+                            currentMedia.title,
+                            currentMedia.description,
+                            currentMedia.duration,
+                            currentMedia.durationSeconds,
+                            currentMedia.numberOfViews,
+                            currentMedia.numberOfLikes,
+                            currentMedia.isLicensed,
+                            currentMedia.isFirstResult,
+                            currentMedia.isBestRank,
+                            currentMedia.rank,
+                            currentMedia.address,
+                            Common.getMomentNowFormat(),
+                            Common.getMomentNowFormat()
+                        ]
+                    });
+                    execResults.added++;
+                }
+            } catch (error) {
+                Log.error(`database : error updating medias : [ ${currentMedia.keyId}, ${currentMedia.title} ]`);
+                Log.error(error.message);
+                Log.error(error.stack);
+                execResults.errors++;
+            }
+        }
+
+        await this.commit();
+
+        Log.info(`database : medias updated : [ added: ${execResults.added}, updated: ${execResults.updated}, deleted: ${execResults.deleted}, errors: ${execResults.errors} ]`);
     }
 }
 

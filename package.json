@@ -11,11 +11,13 @@
     "start:personal:anilist": "node main.js personal --database='database/template.sqlite3' --source='anilist' --config='config/personal.json'",
     "start:scout:myanimelist": "node main.js scout --database='database/template.sqlite3' --source='myanimelist' --config='config/scout.json'",
     "start:themes:myanimelist": "node main.js themes --database='database/template.sqlite3' --source='myanimelist' --config='config/themes.json'",
+    "start:medias:youtube": "node main.js medias --database='database/template.sqlite3' --source='youtube' --config='config/medias.json'",
     "redo:seasons:anilist": "node main.js seasons --database='database/template.sqlite3' --source='anilist' --config='archive/anilist_seasons.json' --archive",
     "redo:seasons:myanimelist": "node main.js seasons --database='database/template.sqlite3' --source='myanimelist' --config='archive/myanimelist_seasons.json' --archive",
     "redo:personal:anilist": "node main.js personal --database='database/template.sqlite3' --source='anilist' --config='archive/anilist_personal.json' --archive",
     "redo:scout:myanimelist": "node main.js scout --database='database/template.sqlite3' --source='myanimelist' --config='archive/myanimelist_scout.json' --archive",
-    "redo:themes:myanimelist": "node main.js themes --database='database/template.sqlite3' --source='myanimelist' --config='archive/myanimelist_themes.json' --archive"
+    "redo:themes:myanimelist": "node main.js themes --database='database/template.sqlite3' --source='myanimelist' --config='archive/myanimelist_themes.json' --archive",
+    "redo:medias:youtube": "node main.js medias --database='database/template.sqlite3' --source='youtube' --config='archive/youtube_medias.json' --archive"
   },
   "author": "wschneider",
   "license": "ISC",
@@ -24,6 +26,7 @@
     "axios-retry": "^3.2.4",
     "chalk": "^5.0.1",
     "eslint": "^8.12.0",
+    "googleapis": "^100.0.0",
     "log4js": "^6.4.4",
     "moment": "^2.29.1",
     "prompt": "^1.2.2",

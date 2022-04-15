@@ -38,19 +38,23 @@ class MyAnimeList {
         } 
         return this.getAnimeThemesAPI(Config.parse(config));
     }
+    
+    async getMedias(config, fromArchive = false) {
+        Log.warn('myanimelist : medias command is not supported : see --help for more information');
+    }
 
     async getAnimeBySeasonsArchive(config) {
-        Log.debug(`myanimelist : using anime seasons archive : [ ${config} ]`);
+        Log.warn(`myanimelist : using seasons archive : [ ${config} ]`);
         return Config.parse(config);
     }
     
     async getAnimeByScoutArchive(config) {
-        Log.debug(`myanimelist : using anime scout archive : [ ${config} ]`);
+        Log.warn(`myanimelist : using scout archive : [ ${config} ]`);
         return Config.parse(config);
     }
     
     async getAnimeThemesArchive(config) {
-        Log.debug(`myanimelist : using anime themes archive : [ ${config} ]`);
+        Log.warn(`myanimelist : using themes archive : [ ${config} ]`);
         return Config.parse(config);
     }
 
@@ -251,6 +255,10 @@ class MyAnimeList {
         Log.info(`myanimelist : saving anime themes : [ ${animes.length} entries ]`);
         await this.database.saveMyAnimeList(animes);
         await this.database.saveThemes(animes);
+    }
+
+    async saveMedias(medias) {
+        Log.warn('myanimelist : medias command is not supported : see --help for more information');
     }
 
     parseAnimeNode(node) {

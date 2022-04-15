@@ -34,13 +34,17 @@ class AniList {
         Log.warn('anilist : themes command is not supported : see --help for more information');
     }
     
+    async getMedias(config, fromArchive = false) {
+        Log.warn('anilist : medias command is not supported : see --help for more information');
+    }
+    
     async getAnimeBySeasonsArchive(config) {
-        Log.debug(`anilist : using anime seasons archive : [ ${config} ]`);
+        Log.warn(`anilist : using seasons archive : [ ${config} ]`);
         return Config.parse(config);
     }
 
     async getAnimeByPersonalListArchive(config) {
-        Log.debug(`anilist : using anime personal archive : [ ${config} ]`);
+        Log.warn(`anilist : using personal archive : [ ${config} ]`);
         return Config.parse(config);
     }
 
@@ -247,8 +251,15 @@ class AniList {
         Log.warn('anilist : themes command is not supported : see --help for more information');
     }
 
+    async saveMedias(medias) {
+        Log.warn('anilist : medias command is not supported : see --help for more information');
+    }
+
     parseAnimeMedia(media) {
         let currentMediaStartMoment = Common.getMoment(media.startDate.year, media.startDate.month, media.startDate.day);
+        if (!currentMediaStartMoment.isValid()) {
+            currentMediaStartMoment = null;
+        }
         let item = {
             id: media.id,
             title: media.title.romaji,
@@ -258,13 +269,13 @@ class AniList {
             seasonYear: media.seasonYear,
             genres: media.genres.join(','),
             numberOfEpisodes: media.episodes,
-            startDate: currentMediaStartMoment.format("YYYY-MM-DD"),
-            startWeekNumber: currentMediaStartMoment.format("W"),
-            startDayOfWeek: currentMediaStartMoment.format("dddd"),
+            startDate: currentMediaStartMoment?.format("YYYY-MM-DD"),
+            startWeekNumber: currentMediaStartMoment?.format("W"),
+            startDayOfWeek: currentMediaStartMoment?.format("dddd"),
             hasPrequel: Common.hasPrequel(media.relations.edges),
             hasSequel: Common.hasSequel(media.relations.edges),
             status: media.status,
-            siteUrl: media.siteUrl
+            address: media.siteUrl
         };
         return item;
     }

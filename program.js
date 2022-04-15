@@ -3,6 +3,7 @@ import { Database } from './database.js';
 
 import { AniList } from './facade/anilist.js';
 import { MyAnimeList } from './facade/myanimelist.js';
+import { YouTube } from './facade/youtube.js';
 
 class Program {
 
@@ -17,6 +18,9 @@ class Program {
 
             case 'myanimelist':
                 return new MyAnimeList(this.database);
+            
+            case 'youtube':
+                return new YouTube(this.database);
                 
             default:
                 throw new Error(`source '${source}' is not implemented.`);
@@ -112,6 +116,31 @@ class Program {
                 await facade.saveThemes(animes);
             } else {
                 Log.warn(`program : themes command : no data to save : [ ${source}, ${config} ]`);
+            }
+            
+        } catch (error) {
+            if (error.isAxiosError) {
+                Log.fatal(error.response.data.errors);
+            }
+            Log.fatal(error.message);
+            Log.fatal(error.stack);
+        }
+    }
+
+    async runMedias(source, config, fromArchive = false) {
+        try {
+            Log.info(`program : medias command : [ ${source}, ${config} ]`);
+
+            await this.database.init();
+
+            let facade = this.buildFacade(source);
+
+            let medias = await facade.getMedias(config, fromArchive);
+            
+            if (medias && medias.length > 0) {
+                await facade.saveMedias(medias);
+            } else {
+                Log.warn(`program : medias command : no data to save : [ ${source}, ${config} ]`);
             }
             
         } catch (error) {

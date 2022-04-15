@@ -66,11 +66,28 @@ let argv = (yargs)(process.argv.slice(2))
                 'config' : { type : 'string' },
                 'archive' : { type : 'boolean', default: false }
             })
-            .demandOption([ 'database', 'source', 'config', 'archive' ], "example: node main.js scout --database='database/template.sqlite3' --source='myanimelist' --config='config/themes.json'")
+            .demandOption([ 'database', 'source', 'config', 'archive' ], "example: node main.js themes --database='database/template.sqlite3' --source='myanimelist' --config='config/themes.json'")
         },
         handler: async (argv) => {
             await (new Program(argv.database).runThemes(argv.source, argv.config, argv.archive));
             Log.info('main : themes command completed...');
+        }
+    })
+    .command({
+        command: 'medias [options]',
+        desc: 'imports media information for themes from youtube',
+        builder: (yargs) => { yargs
+            .options({
+                'database' : { type : 'string' },
+                'source' : { type : 'string' },
+                'config' : { type : 'string' },
+                'archive' : { type : 'boolean', default: false }
+            })
+            .demandOption([ 'database', 'source', 'config', 'archive' ], "example: node main.js medias --database='database/template.sqlite3' --source='youtube' --config='config/medias.json'")
+        },
+        handler: async (argv) => {
+            await (new Program(argv.database).runMedias(argv.source, argv.config, argv.archive));
+            Log.info('main : media command completed...');
         }
     })
     .demandCommand()

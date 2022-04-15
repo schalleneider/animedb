@@ -39,7 +39,7 @@ CREATE TABLE "AniList" (
     "HasPrequel" INTEGER,
     "HasSequel" INTEGER,
     "Status" TEXT,
-    "SiteUrl" TEXT,
+    "Address" TEXT,
     "CreatedOn" TEXT,
     "LastModifiedOn" TEXT,
     PRIMARY KEY("Id")
@@ -94,12 +94,23 @@ CREATE TABLE "Theme" (
     FOREIGN KEY("KeyId") REFERENCES "Source"("KeyId")
 );
 
-CREATE TABLE "Link" (
+CREATE TABLE "Media" (
     "Id" INTEGER,
     "ThemeId" INTEGER,
-    "Address" TEXT,
+    "KeyId" TEXT,
+    "Title" TEXT,
+    "Description" TEXT,
+    "Duration" TEXT,
+    "DurationSeconds" INTEGER,
+    "NumberOfViews" INTEGER,
+    "NumberOfLikes" INTEGER,
+    "IsLicensed" INTEGER,
+    "IsFirstResult" INTEGER,
+    "IsBestRank" INTEGER,
     "Rank" INTEGER,
+    "Address" TEXT,
     "CreatedOn" TEXT,
+    "LastModifiedOn" TEXT,
     PRIMARY KEY("Id")
     FOREIGN KEY("ThemeId") REFERENCES "Theme"("Id")
 );
