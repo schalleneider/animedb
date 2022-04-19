@@ -1,23 +1,19 @@
-import path from 'path';
 import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
 
 import { Log } from './log.js';
+import { Config } from './config.js';
 import { Common } from './common.js';
 import { Prompt } from './prompt.js';
 
 class Database {
 
-    constructor(databasePath) {
-        this.databasePath = path.resolve(databasePath);
-    }
-
     async init() {
         this.database = await open({
-            filename: this.databasePath,
+            filename: Config.databasePath,
             driver: sqlite3.Database
         });
-        Log.info(`database : connection opened : [ ${this.databasePath} ]`);
+        Log.info(`database : connection opened : [ ${Config.databasePath} ]`);
     }
 
     async begin() {
@@ -494,7 +490,7 @@ class Database {
                     if (mustDelete) {
                         
                         let linkCleanupResult = await this.exec({
-                            query: `DELETE FROM Link WHERE ThemeId IN (SELECT Id FROM Theme WHERE KeyId = ?)`,
+                            query: `DELETE FROM Media WHERE ThemeId IN (SELECT Id FROM Theme WHERE KeyId = ?)`,
                             params: [
                                 existingThemes.KeyId
                             ]

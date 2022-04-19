@@ -2,7 +2,6 @@ import axios from 'axios';
 import axiosRetry from 'axios-retry';
 
 import { Log } from '../log.js';
-import { Config } from '../config.js';
 import { Common } from '../common.js';
 import { Archive } from '../archive.js';
 
@@ -12,43 +11,7 @@ class AniList {
         this.database = database;
     }
 
-    async getAnimeBySeasons(config, fromArchive = false) {
-        if (fromArchive) {
-            return this.getAnimeBySeasonsArchive(config)
-        } 
-        return this.getAnimeBySeasonsAPI(Config.parse(config));
-    }
-
-    async getAnimeByPersonalList(config, fromArchive = false) {
-        if (fromArchive) {
-            return this.getAnimeByPersonalListArchive(config)
-        } 
-        return this.getAnimeByPersonalListAPI(Config.parse(config));
-    }
-
-    async getAnimeByScout(config, fromArchive = false) {
-        Log.warn('anilist : scout command is not supported : see --help for more information');
-    }
-
-    async getAnimeThemes(config, fromArchive = false) {
-        Log.warn('anilist : themes command is not supported : see --help for more information');
-    }
-    
-    async getMedias(config, fromArchive = false) {
-        Log.warn('anilist : medias command is not supported : see --help for more information');
-    }
-    
-    async getAnimeBySeasonsArchive(config) {
-        Log.warn(`anilist : using seasons archive : [ ${config} ]`);
-        return Config.parse(config);
-    }
-
-    async getAnimeByPersonalListArchive(config) {
-        Log.warn(`anilist : using personal archive : [ ${config} ]`);
-        return Config.parse(config);
-    }
-
-    async getAnimeBySeasonsAPI(criteria, saveToArchive = true) {
+    async getAnimeBySeasons(criteria) {
 
         let animeList = [];
 
@@ -137,14 +100,12 @@ class AniList {
             await Common.sleep(criteria.delay);
         }
 
-        if (saveToArchive) {
-            Archive.save(animeList, 'anilist_seasons');
-        }
+        Archive.save(animeList, 'anilist_seasons');
 
         return animeList;
-    } 
+    }
 
-    async getAnimeByPersonalListAPI(criteria, saveToArchive = true) {
+    async getAnimeByPersonalList(criteria) {
 
         let animeList = [];
 
@@ -225,11 +186,21 @@ class AniList {
             await Common.sleep(criteria.delay);
         }
 
-        if (saveToArchive) {
-            Archive.save(animeList, `anilist_personal_${criteria.userName}`, false);
-        }
+        Archive.save(animeList, `anilist_personal_${criteria.userName}`, false);
 
         return animeList;
+    }
+
+    async getAnimeByScout(config) {
+        Log.warn('anilist : scout command is not supported : see --help for more information');
+    }
+
+    async getAnimeThemes(config) {
+        Log.warn('anilist : themes command is not supported : see --help for more information');
+    }
+    
+    async getMedias(config) {
+        Log.warn('anilist : medias command is not supported : see --help for more information');
     }
 
     async saveAnime(animes) {
@@ -256,7 +227,7 @@ class AniList {
     }
 
     parseAnimeMedia(media) {
-        let currentMediaStartMoment = Common.getMoment(media.startDate.year, media.startDate.month, media.startDate.day);
+        let currentMediaStartMoment = Common.getMoment(media.startDate.year + '-' + media.startDate.month + '-' + media.startDate.day);
         if (!currentMediaStartMoment.isValid()) {
             currentMediaStartMoment = null;
         }

@@ -11,58 +11,46 @@ class YouTube {
     constructor(database) {
         this.database = database;
         this.youtube = google.youtube('v3');
+        this.keyFilePool = Config.youtubeAuth;
+        this.keyFilePoolIndex = 0;
     }
 
-    async auth(keyFile) {
+    async auth() {
         const auth = new google.auth.GoogleAuth({
-            keyFile: keyFile,
+            keyFile: this.keyFilePool[this.keyFilePoolIndex],
             scopes: [
                 'https://www.googleapis.com/auth/cloud-platform',
                 'https://www.googleapis.com/auth/youtube'
             ],
         });
         google.options({ auth });
-        Log.debug(`youtube : currently authenticated with key file [ ${keyFile} ]`);
+        Log.debug(`youtube : currently authenticated with key file [ ${this.keyFilePool[this.keyFilePoolIndex]} ]`);
+        this.keyFilePoolIndex++;
     }
 
-    async getAnimeBySeasons(config, fromArchive = false) {
+    async getAnimeBySeasons(config) {
         Log.warn('youtube : seasons command is not supported : see --help for more information');
     }
 
-    async getAnimeByPersonalList(config, fromArchive = false) {
+    async getAnimeByPersonalList(config) {
         Log.warn('youtube : personal command is not supported : see --help for more information');
     }
     
-    async getAnimeByScout(config, fromArchive = false) {
+    async getAnimeByScout(config) {
         Log.warn('youtube : scout command is not supported : see --help for more information');
     }
 
-    async getAnimeThemes(config, fromArchive = false) {
+    async getAnimeThemes(config) {
         Log.warn('youtube : themes command is not supported : see --help for more information');
     }
-    
-    async getMedias(config, fromArchive = false) {
-        if (fromArchive) {
-            return this.getMediasArchive(config)
-        } 
-        return this.getMediasAPI(Config.parse(config));
-    }
 
-    async getMediasArchive(config) {
-        Log.warn(`youtube : using medias archive : [ ${config} ]`);
-        return Config.parse(config);
-    }
-
-    async getMediasAPI(criteria, saveToArchive = true) {
+    async getMedias(criteria) {
 
         let mediaList = [];
 
-        let keyFilePool = criteria.authKeyFiles;
-        let keyFilePoolIndex = 0;
-
         let themes = await this.database.getThemes(criteria);
         
-        this.auth(keyFilePool[keyFilePoolIndex]);
+        this.auth();
 
         for (let themesIndex = 0; themesIndex < themes.length; themesIndex++) {
             
@@ -96,13 +84,12 @@ class YouTube {
                     Log.warn(`[ ${currentTheme.Artist} - ${currentTheme.Title} ] : ${response}`);
 
                     // quota exeeded
-                    if (response.status === 403 && keyFilePoolIndex < (keyFilePool.length - 1)) { 
+                    if (response.status === 403) { 
 
                         let mustReAuth = await Prompt.askConfirmation(`[ 403 ] status received. proceed with the reauthentication ?`);
             
                         if (mustReAuth) {
-                            keyFilePoolIndex++;
-                            this.auth(keyFilePool[keyFilePoolIndex]);
+                            this.auth();
                             index--; // retry current index
                         }                        
                     }
@@ -165,9 +152,7 @@ class YouTube {
             await Common.sleep(criteria.delay);
         }
 
-        if (saveToArchive) {
-            Archive.save(mediaList, 'youtube_medias');
-        }
+        Archive.save(mediaList, 'youtube_medias');
 
         return mediaList;
     }

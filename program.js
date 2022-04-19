@@ -1,4 +1,6 @@
 import { Log } from './log.js';
+import { Config } from './config.js';
+import { Archive } from './archive.js';
 import { Database } from './database.js';
 
 import { AniList } from './facade/anilist.js';
@@ -7,8 +9,8 @@ import { YouTube } from './facade/youtube.js';
 
 class Program {
 
-    constructor(databasePath) {
-        this.database = new Database(databasePath);
+    constructor() {
+        this.database = new Database();
     }
 
     buildFacade(source) {
@@ -27,20 +29,25 @@ class Program {
         }
     }
 
-    async runSeasons(source, config, fromArchive = false) {
+    async runSeasons(source, fromArchive = false, archivePath) {
         try {
-            Log.info(`program : seasons command : [ ${source}, ${config} ]`);
+            Log.info(`program : seasons command : [ ${source}, ${Config.commandSeasons} ]`);
 
             await this.database.init();
 
             let facade = this.buildFacade(source);
+            let animes = [];
 
-            let animes = await facade.getAnimeBySeasons(config, fromArchive);
+            if (fromArchive) {
+                animes = Archive.load(archivePath)
+            } else {
+                animes = await facade.getAnimeBySeasons(Config.parsedSeasons(), fromArchive);
+            }
             
             if (animes && animes.length > 0) {
                 await facade.saveAnime(animes);
             } else {
-                Log.warn(`program : seasons command : no data to save : [ ${source}, ${config} ]`);
+                Log.warn(`program : seasons command : no data to save : [ ${source}, ${Config.commandSeasons} ]`);
             }
             
         } catch (error) {
@@ -52,20 +59,25 @@ class Program {
         }
     }
     
-    async runPersonal(source, config, fromArchive = false) {
+    async runPersonal(source, fromArchive = false, archivePath) {
         try {
-            Log.info(`program : personal command : [ ${source}, ${config} ]`);
+            Log.info(`program : personal command : [ ${source}, ${Config.commandPersonal} ]`);
 
             await this.database.init();
 
             let facade = this.buildFacade(source);
+            let animes = [];
 
-            let animes = await facade.getAnimeByPersonalList(config, fromArchive);
+            if (fromArchive) {
+                animes = Archive.load(archivePath)
+            } else {
+                animes = await facade.getAnimeByPersonalList(Config.parsedPersonal());
+            }
             
             if (animes && animes.length > 0) {
                 await facade.savePersonal(animes);
             } else {
-                Log.warn(`program : personal command : no data to save : [ ${source}, ${config} ]`);
+                Log.warn(`program : personal command : no data to save : [ ${source}, ${Config.commandPersonal} ]`);
             }
             
         } catch (error) {
@@ -77,20 +89,25 @@ class Program {
         }
     }
     
-    async runScout(source, config, fromArchive = false) {
+    async runScout(source, fromArchive = false, archivePath) {
         try {
-            Log.info(`program : scout command : [ ${source}, ${config} ]`);
+            Log.info(`program : scout command : [ ${source}, ${Config.commandScout} ]`);
 
             await this.database.init();
 
             let facade = this.buildFacade(source);
+            let animes = [];
 
-            let animes = await facade.getAnimeByScout(config, fromArchive);
-            
+            if (fromArchive) {
+                animes = Archive.load(archivePath)
+            } else {
+                animes = await facade.getAnimeByScout(Config.parsedScout());
+            }
+
             if (animes && animes.length > 0) {
                 await facade.saveScout(animes);
             } else {
-                Log.warn(`program : scout command : no data to save : [ ${source}, ${config} ]`);
+                Log.warn(`program : scout command : no data to save : [ ${source}, ${Config.commandScout} ]`);
             }
             
         } catch (error) {
@@ -102,20 +119,25 @@ class Program {
         }
     }
 
-    async runThemes(source, config, fromArchive = false) {
+    async runThemes(source, fromArchive = false, archivePath) {
         try {
-            Log.info(`program : themes command : [ ${source}, ${config} ]`);
+            Log.info(`program : themes command : [ ${source}, ${Config.commandThemes} ]`);
 
             await this.database.init();
 
             let facade = this.buildFacade(source);
+            let animes = [];
 
-            let animes = await facade.getAnimeThemes(config, fromArchive);
+            if (fromArchive) {
+                animes = Archive.load(archivePath)
+            } else {
+                animes = await facade.getAnimeThemes(Config.parsedThemes());
+            }
             
             if (animes && animes.length > 0) {
                 await facade.saveThemes(animes);
             } else {
-                Log.warn(`program : themes command : no data to save : [ ${source}, ${config} ]`);
+                Log.warn(`program : themes command : no data to save : [ ${source}, ${Config.commandThemes} ]`);
             }
             
         } catch (error) {
@@ -127,20 +149,25 @@ class Program {
         }
     }
 
-    async runMedias(source, config, fromArchive = false) {
+    async runMedias(source, fromArchive = false, archivePath) {
         try {
-            Log.info(`program : medias command : [ ${source}, ${config} ]`);
+            Log.info(`program : medias command : [ ${source}, ${Config.commandMedias} ]`);
 
             await this.database.init();
 
             let facade = this.buildFacade(source);
+            let medias = [];
 
-            let medias = await facade.getMedias(config, fromArchive);
+            if (fromArchive) {
+                medias = Archive.load(archivePath)
+            } else {
+                medias = await facade.getMedias(Config.parsedMedias());
+            }
             
             if (medias && medias.length > 0) {
                 await facade.saveMedias(medias);
             } else {
-                Log.warn(`program : medias command : no data to save : [ ${source}, ${config} ]`);
+                Log.warn(`program : medias command : no data to save : [ ${source}, ${Config.commandMedias} ]`);
             }
             
         } catch (error) {

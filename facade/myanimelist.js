@@ -11,54 +11,10 @@ class MyAnimeList {
 
     constructor(database) {
         this.database = database;
-        this.auth = JSON.parse(fs.readFileSync('auth/myanimelist.json'));
+        this.auth = Config.parsedMyAnimeListAuth();
     }
 
-    async getAnimeBySeasons(config, fromArchive = false) {
-        if (fromArchive) {
-            return this.getAnimeBySeasonsArchive(config)
-        } 
-        return this.getAnimeBySeasonsAPI(Config.parse(config));
-    }
-
-    async getAnimeByPersonalList(config, fromArchive = false) {
-        Log.warn('myanimelist : personal command is not supported : see --help for more information');
-    }
-    
-    async getAnimeByScout(config, fromArchive = false) {
-        if (fromArchive) {
-            return this.getAnimeByScoutArchive(config)
-        } 
-        return this.getAnimeByScoutAPI(Config.parse(config));
-    }
-
-    async getAnimeThemes(config, fromArchive = false) {
-        if (fromArchive) {
-            return this.getAnimeThemesArchive(config)
-        } 
-        return this.getAnimeThemesAPI(Config.parse(config));
-    }
-    
-    async getMedias(config, fromArchive = false) {
-        Log.warn('myanimelist : medias command is not supported : see --help for more information');
-    }
-
-    async getAnimeBySeasonsArchive(config) {
-        Log.warn(`myanimelist : using seasons archive : [ ${config} ]`);
-        return Config.parse(config);
-    }
-    
-    async getAnimeByScoutArchive(config) {
-        Log.warn(`myanimelist : using scout archive : [ ${config} ]`);
-        return Config.parse(config);
-    }
-    
-    async getAnimeThemesArchive(config) {
-        Log.warn(`myanimelist : using themes archive : [ ${config} ]`);
-        return Config.parse(config);
-    }
-
-    async getAnimeBySeasonsAPI(criteria, saveToArchive = true) {
+    async getAnimeBySeasons(criteria) {
 
         let animeList = [];
 
@@ -112,14 +68,16 @@ class MyAnimeList {
             await Common.sleep(criteria.delay);
         }
 
-        if (saveToArchive) {
-            Archive.save(animeList, 'myanimelist_seasons');
-        }
+        Archive.save(animeList, 'myanimelist_seasons');
 
         return animeList;
     }
 
-    async getAnimeByScoutAPI(criteria, saveToArchive = true) {
+    async getAnimeByPersonalList(config) {
+        Log.warn('myanimelist : personal command is not supported : see --help for more information');
+    }
+    
+    async getAnimeByScout(criteria) {
 
         let animeList = [];
 
@@ -130,6 +88,8 @@ class MyAnimeList {
         for (let aniListIndex = 0; aniListIndex < entries.length; aniListIndex++) {
             
             const currentEntry = entries[aniListIndex];
+
+            let query = currentEntry.Title.replace(/[^\w\s]/gi, '').substring(0, 20);
 
             Log.info(`myanimelist : scouting anime : [ ${currentEntry.Title}, ${currentEntry.StartDate} ]`);
 
@@ -142,7 +102,7 @@ class MyAnimeList {
                 method: 'GET',
                 headers: authHeader,
                 params: {
-                    q : currentEntry.Title.replace(/[^\w\s]/gi, ''),
+                    q : query,
                     limit: 20,
                     fields: 'id,title,start_date,end_date,media_type,status,num_episodes,start_season'
                 }
@@ -163,27 +123,25 @@ class MyAnimeList {
                     filteredContent.aniListId = currentEntry.Id;
                     animeList = animeList.concat(filteredContent);
                 } else {
-                    Log.warn(`myanimelist : no valid animes scouted : [ ${currentEntry.Title},  ${currentEntry.StartDate} ]`);
+                    Log.warn(`myanimelist : no valid animes scouted : [ ${query},  ${currentEntry.StartDate} ]`);
                 }
             } catch (error) {
                 if (error.isAxiosError) {
-                    Log.warn(`[ ${currentEntry.Title} ] : ${JSON.stringify(error.response.data)}`);
+                    Log.warn(`[ ${query} ] : ${JSON.stringify(error.response.data)}`);
                 } else {
-                    Log.error(`[ ${currentEntry.Title} ] : ${error.message}`);
+                    Log.error(`[ ${query} ] : ${error.message}`);
                 }
             }
             
             await Common.sleep(criteria.delay);
         }
 
-        if (saveToArchive) {
-            Archive.save(animeList, 'myanimelist_scout');
-        }
+        Archive.save(animeList, 'myanimelist_scout');
 
         return animeList;
     }
 
-    async getAnimeThemesAPI(criteria, saveToArchive = true) {
+    async getAnimeThemes(criteria) {
 
         let animeList = [];
 
@@ -229,13 +187,15 @@ class MyAnimeList {
             await Common.sleep(criteria.delay);
         }
 
-        if (saveToArchive) {
-            Archive.save(animeList, 'myanimelist_themes');
-        }
+        Archive.save(animeList, 'myanimelist_themes');
 
         return animeList;
     }
-
+    
+    async getMedias(config) {
+        Log.warn('myanimelist : medias command is not supported : see --help for more information');
+    }
+    
     async saveAnime(animes) {
         Log.info(`myanimelist : saving anime : [ ${animes.length} entries ]`);
         await this.database.saveMyAnimeList(animes);

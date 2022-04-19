@@ -20,10 +20,6 @@ class Common {
         return Common.getMomentNow().format();
     }
 
-    static getMoment(year, month, day) {
-        return Common.getMoment(`${year}-${month}-${day}`);
-    }
-    
     static getMoment(input) {
         return moment(input, 'YYYY-MM-DD');
     }

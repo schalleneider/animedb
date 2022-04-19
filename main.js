@@ -10,15 +10,14 @@ let argv = (yargs)(process.argv.slice(2))
         desc: 'imports anime information based on a season list',
         builder: (yargs) => { yargs
             .options({
-                'database' : { type : 'string' },
                 'source' : { type : 'string' },
-                'config' : { type : 'string' },
-                'archive' : { type : 'boolean', default: false }
+                'archive' : { type : 'boolean', default: false },
+                'archivePath' : { type : 'string' }
             })
-            .demandOption([ 'database', 'source', 'config', 'archive' ], "example: node main.js seasons --database='database/template.sqlite3' --source='anilist' --config='config/seasons.json'")
+            .demandOption([ 'source', 'archive' ], "example: node main.js seasons --source='anilist|myanimelist'")
         },
         handler: async (argv) =>  {
-            await (new Program(argv.database).runSeasons(argv.source, argv.config, argv.archive));
+            await (new Program().runSeasons(argv.source, argv.archive, argv.archivePath));
             Log.info('main : seasons command completed...');
         }
     })
@@ -27,15 +26,14 @@ let argv = (yargs)(process.argv.slice(2))
         desc: 'imports anime information based on a personal list',
         builder: (yargs) => { yargs
             .options({
-                'database' : { type : 'string' },
                 'source' : { type : 'string' },
-                'config' : { type : 'string' },
-                'archive' : { type : 'boolean', default: false }
+                'archive' : { type : 'boolean', default: false },
+                'archivePath' : { type : 'string' }
             })
-            .demandOption([ 'database', 'source', 'config', 'archive' ], "example: node main.js personal --database='database/template.sqlite3' --source='anilist' --config='config/personal.json'")
+            .demandOption([ 'source', 'archive' ], "example: node main.js personal --source='anilist'")
         },
         handler: async (argv) => {
-            await (new Program(argv.database).runPersonal(argv.source, argv.config, argv.archive));
+            await (new Program().runPersonal(argv.source, argv.archive, argv.archivePath));
             Log.info('main : personal command completed...');
         }
     })
@@ -44,15 +42,14 @@ let argv = (yargs)(process.argv.slice(2))
         desc: 'scout anime information on myanimelist based on anilist entries',
         builder: (yargs) => { yargs
             .options({
-                'database' : { type : 'string' },
                 'source' : { type : 'string' },
-                'config' : { type : 'string' },
-                'archive' : { type : 'boolean', default: false }
+                'archive' : { type : 'boolean', default: false },
+                'archivePath' : { type : 'string' }
             })
-            .demandOption([ 'database', 'source', 'config', 'archive' ], "example: node main.js scout --database='database/template.sqlite3' --source='myanimelist' --config='config/scout.json'")
+            .demandOption([ 'source', 'archive' ], "example: node main.js scout --source='myanimelist'")
         },
         handler: async (argv) => {
-            await (new Program(argv.database).runScout(argv.source, argv.config, argv.archive));
+            await (new Program().runScout(argv.source, argv.archive, argv.archivePath));
             Log.info('main : scout command completed...');
         }
     })
@@ -61,15 +58,14 @@ let argv = (yargs)(process.argv.slice(2))
         desc: 'imports opening and ending themes from myanimelist',
         builder: (yargs) => { yargs
             .options({
-                'database' : { type : 'string' },
                 'source' : { type : 'string' },
-                'config' : { type : 'string' },
-                'archive' : { type : 'boolean', default: false }
+                'archive' : { type : 'boolean', default: false },
+                'archivePath' : { type : 'string' }
             })
-            .demandOption([ 'database', 'source', 'config', 'archive' ], "example: node main.js themes --database='database/template.sqlite3' --source='myanimelist' --config='config/themes.json'")
+            .demandOption([ 'source', 'archive' ], "example: node main.js themes --source='myanimelist'")
         },
         handler: async (argv) => {
-            await (new Program(argv.database).runThemes(argv.source, argv.config, argv.archive));
+            await (new Program().runThemes(argv.source, argv.archive, argv.archivePath));
             Log.info('main : themes command completed...');
         }
     })
@@ -78,15 +74,14 @@ let argv = (yargs)(process.argv.slice(2))
         desc: 'imports media information for themes from youtube',
         builder: (yargs) => { yargs
             .options({
-                'database' : { type : 'string' },
                 'source' : { type : 'string' },
-                'config' : { type : 'string' },
-                'archive' : { type : 'boolean', default: false }
+                'archive' : { type : 'boolean', default: false },
+                'archivePath' : { type : 'string' }
             })
-            .demandOption([ 'database', 'source', 'config', 'archive' ], "example: node main.js medias --database='database/template.sqlite3' --source='youtube' --config='config/medias.json'")
+            .demandOption([ 'source', 'archive' ], "example: node main.js medias --source='youtube'")
         },
         handler: async (argv) => {
-            await (new Program(argv.database).runMedias(argv.source, argv.config, argv.archive));
+            await (new Program().runMedias(argv.source, argv.archive, argv.archivePath));
             Log.info('main : media command completed...');
         }
     })
