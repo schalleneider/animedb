@@ -6,7 +6,7 @@
   "exports": "./main.js",
   "scripts": {
     "help": "node main.js --help",
-    "start": "node main.js",
+    "redist": "npx caxa --input '.' --output './bin/animedb.exe' -- '{{caxa}}/node_modules/.bin/node' '{{caxa}}/main.js'",
     "start:seasons:anilist": "node main.js seasons --source='anilist'",
     "start:seasons:myanimelist": "node main.js seasons --source='myanimelist'",
     "start:personal:anilist": "node main.js personal --source='anilist'",
@@ -25,6 +25,7 @@
   "dependencies": {
     "axios": "^0.26.1",
     "axios-retry": "^3.2.4",
+    "caxa": "^2.1.0",
     "chalk": "^5.0.1",
     "eslint": "^8.12.0",
     "googleapis": "^100.0.0",

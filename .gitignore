@@ -1,6 +1,7 @@
 /node_modules/
 /archive/
 /auth/
+/bin/
 /config/
 /database/
 /logs/
