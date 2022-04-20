@@ -3,11 +3,7 @@ import path from 'path';
 
 class Config {
 
-    CONFIG_PATH = './global.config';
-
-    constructor() {
-        this.config = Config.parse(this.CONFIG_PATH);
-    }
+    constructor() {}
 
     static get instance() {
         if (!Config._instance) {
@@ -16,44 +12,52 @@ class Config {
         return Config._instance;
     }
 
+    static init(environment) {
+        Config.instance.config = Config.parse(`./animedb.${environment}.json`);
+    }
+
+    static get config() {
+        return Config.instance.config;
+    }
+
     static get archiveEnable() {
-        return Config.instance.config.archive.enable;
+        return Config.config.archive.enable;
     }
 
     static get archiveUnique() {
-        return Config.instance.config.archive.unique;
+        return Config.config.archive.unique;
     }
     
     static get databasePath() {
-        return Config.instance.config.database.path;
+        return Config.config.database.path;
     }
 
     static get commandSeasons() {
-        return Config.instance.config.command.seasons;
+        return Config.config.command.seasons;
     }
 
     static get commandPersonal() {
-        return Config.instance.config.command.personal;
+        return Config.config.command.personal;
     }
 
     static get commandScout() {
-        return Config.instance.config.command.scout;
+        return Config.config.command.scout;
     }
     
     static get commandThemes() {
-        return Config.instance.config.command.themes;
+        return Config.config.command.themes;
     }
     
     static get commandMedias() {
-        return Config.instance.config.command.medias;
+        return Config.config.command.medias;
     }
     
     static get myAnimeListAuth() {
-        return Config.instance.config.myanimelist.auth;
+        return Config.config.myanimelist.auth;
     }
     
     static get youtubeAuth() {
-        return Config.instance.config.youtube.auth;
+        return Config.config.youtube.auth;
     }
 
     static parse(config) {

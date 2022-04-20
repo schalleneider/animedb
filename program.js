@@ -9,8 +9,9 @@ import { YouTube } from './facade/youtube.js';
 
 class Program {
 
-    constructor() {
+    constructor(environment) {
         this.database = new Database();
+        Config.init(environment);
     }
 
     buildFacade(source) {
