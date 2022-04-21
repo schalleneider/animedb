@@ -32,7 +32,7 @@ class Program {
 
     async runSeasons(source, fromArchive = false, archivePath) {
         try {
-            Log.info(`program : seasons command : [ ${source}, ${Config.commandSeasons} ]`);
+            Log.info(`program : seasons command : [ ${source}, ${Config.configFile} ]`);
 
             await this.database.init();
 
@@ -42,13 +42,13 @@ class Program {
             if (fromArchive) {
                 animes = Archive.load(archivePath)
             } else {
-                animes = await facade.getAnimeBySeasons(Config.parsedSeasons(), fromArchive);
+                animes = await facade.getAnimeBySeasons(Config.commandSeasons, fromArchive);
             }
             
             if (animes && animes.length > 0) {
                 await facade.saveAnime(animes);
             } else {
-                Log.warn(`program : seasons command : no data to save : [ ${source}, ${Config.commandSeasons} ]`);
+                Log.warn(`program : seasons command : no data to save : [ ${source}, ${Config.configFile} ]`);
             }
             
         } catch (error) {
@@ -62,7 +62,7 @@ class Program {
     
     async runPersonal(source, fromArchive = false, archivePath) {
         try {
-            Log.info(`program : personal command : [ ${source}, ${Config.commandPersonal} ]`);
+            Log.info(`program : personal command : [ ${source}, ${Config.configFile} ]`);
 
             await this.database.init();
 
@@ -72,13 +72,13 @@ class Program {
             if (fromArchive) {
                 animes = Archive.load(archivePath)
             } else {
-                animes = await facade.getAnimeByPersonalList(Config.parsedPersonal());
+                animes = await facade.getAnimeByPersonalList(Config.commandPersonal);
             }
             
             if (animes && animes.length > 0) {
                 await facade.savePersonal(animes);
             } else {
-                Log.warn(`program : personal command : no data to save : [ ${source}, ${Config.commandPersonal} ]`);
+                Log.warn(`program : personal command : no data to save : [ ${source}, ${Config.configFile} ]`);
             }
             
         } catch (error) {
@@ -92,7 +92,7 @@ class Program {
     
     async runScout(source, fromArchive = false, archivePath) {
         try {
-            Log.info(`program : scout command : [ ${source}, ${Config.commandScout} ]`);
+            Log.info(`program : scout command : [ ${source}, ${Config.configFile} ]`);
 
             await this.database.init();
 
@@ -102,13 +102,13 @@ class Program {
             if (fromArchive) {
                 animes = Archive.load(archivePath)
             } else {
-                animes = await facade.getAnimeByScout(Config.parsedScout());
+                animes = await facade.getAnimeByScout(Config.commandScout);
             }
 
             if (animes && animes.length > 0) {
                 await facade.saveScout(animes);
             } else {
-                Log.warn(`program : scout command : no data to save : [ ${source}, ${Config.commandScout} ]`);
+                Log.warn(`program : scout command : no data to save : [ ${source}, ${Config.configFile} ]`);
             }
             
         } catch (error) {
@@ -122,7 +122,7 @@ class Program {
 
     async runThemes(source, fromArchive = false, archivePath) {
         try {
-            Log.info(`program : themes command : [ ${source}, ${Config.commandThemes} ]`);
+            Log.info(`program : themes command : [ ${source}, ${Config.configFile} ]`);
 
             await this.database.init();
 
@@ -132,13 +132,13 @@ class Program {
             if (fromArchive) {
                 animes = Archive.load(archivePath)
             } else {
-                animes = await facade.getAnimeThemes(Config.parsedThemes());
+                animes = await facade.getAnimeThemes(Config.commandThemes);
             }
             
             if (animes && animes.length > 0) {
                 await facade.saveThemes(animes);
             } else {
-                Log.warn(`program : themes command : no data to save : [ ${source}, ${Config.commandThemes} ]`);
+                Log.warn(`program : themes command : no data to save : [ ${source}, ${Config.configFile} ]`);
             }
             
         } catch (error) {
@@ -152,7 +152,7 @@ class Program {
 
     async runMedias(source, fromArchive = false, archivePath) {
         try {
-            Log.info(`program : medias command : [ ${source}, ${Config.commandMedias} ]`);
+            Log.info(`program : medias command : [ ${source}, ${Config.configFile} ]`);
 
             await this.database.init();
 
@@ -162,13 +162,13 @@ class Program {
             if (fromArchive) {
                 medias = Archive.load(archivePath)
             } else {
-                medias = await facade.getMedias(Config.parsedMedias());
+                medias = await facade.getMedias(Config.commandMedias);
             }
             
             if (medias && medias.length > 0) {
                 await facade.saveMedias(medias);
             } else {
-                Log.warn(`program : medias command : no data to save : [ ${source}, ${Config.commandMedias} ]`);
+                Log.warn(`program : medias command : no data to save : [ ${source}, ${Config.configFile} ]`);
             }
             
         } catch (error) {

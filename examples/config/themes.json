@@ -1,6 +1,0 @@
-{
-    "delay" : 1000,
-    "base" : "SELECT M.* FROM MyAnimeList M",
-    "criteria" : "WHERE M.Id IN (SELECT S.ExternalId FROM Source S INNER JOIN SourceType T ON S.SourceTypeId = T.Id WHERE T.Name = 'MyAnimeList' AND KeyId NOT IN (SELECT KeyId FROM Theme)) ORDER BY M.Id",
-    "limit" : "LIMIT 10"
-}

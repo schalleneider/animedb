@@ -1,3 +1,1 @@
-- global configuration file
-- myanimelist auth information on global configuration file
-- youtube auth information on global configuration file
+refactor package.json to reference root script for dev and start

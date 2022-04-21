@@ -89,9 +89,9 @@ class MyAnimeList {
             
             const currentEntry = entries[aniListIndex];
 
-            let query = currentEntry.Title.replace(/[^\w\s]/gi, '').substring(0, criteria.queryLengthLimit);
+            let query = currentEntry.AniListTitle.replace(/[^\w\s]/gi, '').substring(0, criteria.queryLengthLimit);
 
-            Log.info(`myanimelist : scouting anime : [ ${currentEntry.Title}, ${currentEntry.StartDate} ]`);
+            Log.info(`myanimelist : scouting anime : [ ${currentEntry.AniListTitle}, ${currentEntry.AniListStartDate} ]`);
 
             let authHeader = JSON.parse(`{ "${this.auth.header}" : "${this.auth.value}" }`);
 
@@ -115,15 +115,15 @@ class MyAnimeList {
                 let parsedResponse = this.parseAnimeResponse(response.data);
 
                 let filteredContent = parsedResponse.find((item) => {
-                    let diff = Common.subtractMoments(Common.getMoment(item.startDate), Common.getMoment(currentEntry.StartDate), "days");
+                    let diff = Common.subtractMoments(Common.getMoment(item.startDate), Common.getMoment(currentEntry.AniListStartDate), "days");
                     return Math.abs(diff) <= criteria.startDateOffsetLimit;
                 });
 
                 if (filteredContent) {
-                    filteredContent.aniListId = currentEntry.Id;
+                    filteredContent.aniListId = currentEntry.AniListId;
                     animeList = animeList.concat(filteredContent);
                 } else {
-                    Log.warn(`myanimelist : no valid animes scouted : [ ${query},  ${currentEntry.StartDate} ]`);
+                    Log.warn(`myanimelist : no valid animes scouted : [ ${query},  ${currentEntry.AniListStartDate} ]`);
                 }
             } catch (error) {
                 if (error.isAxiosError) {
@@ -153,14 +153,14 @@ class MyAnimeList {
             
             const currentEntry = entries[aniListIndex];
 
-            Log.info(`myanimelist : getting anime themes : [ ${currentEntry.Title} ]`);
+            Log.info(`myanimelist : getting anime themes : [ ${currentEntry.MyAnimeListTitle} ]`);
 
             let authHeader = JSON.parse(`{ "${this.auth.header}" : "${this.auth.value}" }`);
 
             axiosRetry(axios, { retries: 3, retryDelay: (5 * 1000) });
 
             const config = {
-                url: `${baseUrl}/${currentEntry.Id}`,
+                url: `${baseUrl}/${currentEntry.MyAnimeListId}`,
                 method: 'GET',
                 headers: authHeader,
                 params: {
@@ -178,9 +178,9 @@ class MyAnimeList {
 
             } catch (error) {
                 if (error.isAxiosError) {
-                    Log.warn(`[ ${currentEntry.Title} ] : ${JSON.stringify(error.response.data)}`);
+                    Log.warn(`[ ${currentEntry.MyAnimeListTitle} ] : ${JSON.stringify(error.response.data)}`);
                 } else {
-                    Log.error(`[ ${currentEntry.Title} ] : ${error.message}`);
+                    Log.error(`[ ${currentEntry.MyAnimeListTitle} ] : ${error.message}`);
                 }
             }
 

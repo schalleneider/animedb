@@ -13,9 +13,14 @@ class Config {
     }
 
     static init(environment) {
-        Config.instance.config = Config.parse(`./animedb.${environment}.json`);
+        Config.instance.configFile = `config/animedb.${environment}.json`;
+        Config.instance.config = Config.parse(Config.configFile);
     }
 
+    static get configFile() {
+        return Config.instance.configFile;
+    }
+    
     static get config() {
         return Config.instance.config;
     }
@@ -62,26 +67,6 @@ class Config {
 
     static parse(config) {
         return JSON.parse(fs.readFileSync(path.resolve(config)));
-    }
-
-    static parsedSeasons() {
-        return Config.parse(Config.commandSeasons);
-    }
-
-    static parsedPersonal() {
-        return Config.parse(Config.commandPersonal);
-    }
-
-    static parsedScout() {
-        return Config.parse(Config.commandScout);
-    }
-
-    static parsedThemes() {
-        return Config.parse(Config.commandThemes);
-    }
-
-    static parsedMedias() {
-        return Config.parse(Config.commandMedias);
     }
 
     static parsedMyAnimeListAuth() {

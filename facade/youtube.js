@@ -56,7 +56,7 @@ class YouTube {
             
             const currentTheme = themes[themesIndex];
 
-            Log.info(`youtube : searching media results : [ ${currentTheme.Artist} - ${currentTheme.Title} ]`);
+            Log.info(`youtube : searching media results : [ ${currentTheme.ThemeArtist} - ${currentTheme.ThemeTitle} ]`);
             
             let searchResults = [];
 
@@ -66,7 +66,7 @@ class YouTube {
                     part: 'id,snippet',
                     order: 'relevance',
                     type: 'video',
-                    q: `${currentTheme.Title} ${currentTheme.Artist}`,
+                    q: `${currentTheme.ThemeTitle} ${currentTheme.ThemeArtist}`,
                 };
 
                 const response = await this.youtube.search.list(paramsSearch);
@@ -81,7 +81,7 @@ class YouTube {
 
                 } else {
 
-                    Log.warn(`[ ${currentTheme.Artist} - ${currentTheme.Title} ] : ${response}`);
+                    Log.warn(`[ ${currentTheme.ThemeArtist} - ${currentTheme.ThemeTitle} ] : ${response}`);
 
                     // quota exeeded
                     if (response.status === 403) { 
@@ -95,12 +95,12 @@ class YouTube {
                     }
                 }
             } catch (error) {
-                Log.error(`[ ${currentTheme.Artist} - ${currentTheme.Title} ] : ${error.message}`);
+                Log.error(`[ ${currentTheme.ThemeArtist} - ${currentTheme.ThemeTitle} ] : ${error.message}`);
             }
 
             if (searchResults.length > 0) {
 
-                Log.info(`youtube : listing video details : [ ${currentTheme.Artist} - ${currentTheme.Title} ]`);
+                Log.info(`youtube : listing video details : [ ${currentTheme.ThemeArtist} - ${currentTheme.ThemeTitle} ]`);
             
                 try {
 
@@ -133,7 +133,7 @@ class YouTube {
                     
                             let detailInfo = this.parseDetail(items[index], index);
 
-                            detailInfo.themeId = currentTheme.Id;
+                            detailInfo.themeId = currentTheme.ThemeId;
                             detailInfo.rank = this.calculateRank(detailInfo, currentTheme);
                 
                             searchMediaList.push(detailInfo);
@@ -142,10 +142,10 @@ class YouTube {
                         mediaList.push.apply(mediaList, this.selectBestRank(searchMediaList));
 
                     } else {
-                        Log.warn(`[ ${currentTheme.Artist} - ${currentTheme.Title} ] : ${response}`);
+                        Log.warn(`[ ${currentTheme.ThemeArtist} - ${currentTheme.ThemeTitle} ] : ${response}`);
                     }
                 } catch (error) {
-                    Log.error(`[ ${currentTheme.Artist} - ${currentTheme.Title} ] : ${error.message}`);
+                    Log.error(`[ ${currentTheme.ThemeArtist} - ${currentTheme.ThemeTitle} ] : ${error.message}`);
                 }
             }
             
@@ -235,8 +235,8 @@ class YouTube {
         }
 
         // ranks videos with artist / music on title or 
-        if (detailInfo.title.search(new RegExp(currentTheme.Title, "i")) != -1 || 
-            detailInfo.title.search(new RegExp(currentTheme.Artist, "i")) != -1) {
+        if (detailInfo.title.search(new RegExp(currentTheme.ThemeTitle, "i")) != -1 || 
+            detailInfo.title.search(new RegExp(currentTheme.ThemeArtist, "i")) != -1) {
             finalRank += 1;
         }
 
