@@ -54,9 +54,9 @@ class AniList {
             }
         }`;
 
-        for (let seasonIndex = 0; seasonIndex < criteria.seasons.length; seasonIndex++) {
+        for (let seasonIndex = 0; seasonIndex < criteria.list.length; seasonIndex++) {
             
-            const currentSeason = criteria.seasons[seasonIndex];
+            const currentSeason = criteria.list[seasonIndex];
 
             Log.info(`anilist : getting anime season : [ ${currentSeason.season}, ${currentSeason.year} ]`);
 
