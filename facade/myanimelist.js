@@ -78,7 +78,7 @@ class MyAnimeList {
     }
     
     async getAnimeByScout(criteria) {
-
+        
         let animeList = [];
 
         let baseUrl = "https://api.myanimelist.net/v2/anime";
@@ -89,7 +89,7 @@ class MyAnimeList {
             
             const currentEntry = entries[aniListIndex];
 
-            let query = currentEntry.Title.replace(/[^\w\s]/gi, '').substring(0, 20);
+            let query = currentEntry.Title.replace(/[^\w\s]/gi, '').substring(0, criteria.queryLengthLimit);
 
             Log.info(`myanimelist : scouting anime : [ ${currentEntry.Title}, ${currentEntry.StartDate} ]`);
 
@@ -116,7 +116,7 @@ class MyAnimeList {
 
                 let filteredContent = parsedResponse.find((item) => {
                     let diff = Common.subtractMoments(Common.getMoment(item.startDate), Common.getMoment(currentEntry.StartDate), "days");
-                    return Math.abs(diff) <= 7;
+                    return Math.abs(diff) <= criteria.startDateOffsetLimit;
                 });
 
                 if (filteredContent) {
