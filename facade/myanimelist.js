@@ -115,12 +115,14 @@ class MyAnimeList {
                 let parsedResponse = this.parseAnimeResponse(response.data);
 
                 let filteredContent = parsedResponse.find((item) => {
-                    let diff = Common.subtractMoments(Common.getMoment(item.startDate), Common.getMoment(currentEntry.AniListStartDate), "days");
+                    let diff = Common.subtractMoments(Common.getMoment(item.myanimelist.startDate), Common.getMoment(currentEntry.AniListStartDate), "days");
                     return Math.abs(diff) <= criteria.startDateOffsetLimit;
                 });
 
                 if (filteredContent) {
-                    filteredContent.aniListId = currentEntry.AniListId;
+                    filteredContent.anilist = {
+                        id: currentEntry.AniListId
+                    };
                     animeList = animeList.concat(filteredContent);
                 } else {
                     Log.warn(`myanimelist : no valid animes scouted : [ ${query},  ${currentEntry.AniListStartDate} ]`);
@@ -223,15 +225,17 @@ class MyAnimeList {
 
     parseAnimeNode(node) {
         let item = {
-            id : node.id,
-            title : node.title,
-            type : node?.media_type.toUpperCase(),
-            season: node.start_season?.season.toUpperCase(),
-            seasonYear: node.start_season?.year,
-            numberOfEpisodes: node.num_episodes,
-            startDate: node.start_date,
-            endDate: node.end_date,
-            status: node?.status.toUpperCase()
+            myanimelist: {
+                id: node.id,
+                title: node.title,
+                type: node?.media_type.toUpperCase(),
+                season: node.start_season?.season.toUpperCase(),
+                seasonYear: node.start_season?.year,
+                numberOfEpisodes: node.num_episodes,
+                startDate: node.start_date,
+                endDate: node.end_date,
+                status: node?.status.toUpperCase()
+            }
         };
         return item;
     }
@@ -241,10 +245,10 @@ class MyAnimeList {
         let dataList = [...response.data];
         for (let index = 0; index < dataList.length; index++) {
             let currentNode = dataList[index].node;
-            // default properties
+            // myanimelist properties
             let item = this.parseAnimeNode(currentNode);
             // push parsed item
-            switch (item.type) {
+            switch (item.myanimelist.type) {
                 case 'TV':
                 case 'OVA':
                 case 'MOVIE':
@@ -256,17 +260,20 @@ class MyAnimeList {
                 default:
                     break;
             }
-            Log.trace(`myanimelist : parsed anime entry : [ ${item.id}, ${item.title}, ${item.season}, ${item.seasonYear} ]`);
+            Log.trace(`myanimelist : parsed anime entry : [ ${item.myanimelist.id}, ${item.myanimelist.title}, ${item.myanimelist.season}, ${item.myanimelist.seasonYear} ]`);
         }
         return parsedResponse;
     }
 
     parseAnimeThemesResponse(response) {
+        // myanimelist properties
         let item = this.parseAnimeNode(response);
         // themes properties
-        item.openings = Common.parseAnimeThemes(response.opening_themes, "OPENING");
-        item.endings = Common.parseAnimeThemes(response.ending_themes, "ENDING");
-        Log.trace(`myanimelist : parsed anime entry : [ ${item.id}, ${item.title}, ${item.season}, ${item.seasonYear} ]`);
+        item.themes = {
+            openings: Common.parseAnimeThemes(response.opening_themes, "OPENING"),
+            endings: Common.parseAnimeThemes(response.ending_themes, "ENDING")
+        };
+        Log.trace(`myanimelist : parsed anime entry : [ ${item.myanimelist.id}, ${item.myanimelist.title}, ${item.myanimelist.season}, ${item.myanimelist.seasonYear} ]`);
         return item;
     }
 }

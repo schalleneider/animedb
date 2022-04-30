@@ -232,21 +232,23 @@ class AniList {
             currentMediaStartMoment = null;
         }
         let item = {
-            id: media.id,
-            title: media.title.romaji,
-            type: media.type,
-            format: media.format,
-            season: media.season,
-            seasonYear: media.seasonYear,
-            genres: media.genres.join(','),
-            numberOfEpisodes: media.episodes,
-            startDate: currentMediaStartMoment?.format("YYYY-MM-DD"),
-            startWeekNumber: currentMediaStartMoment?.format("W"),
-            startDayOfWeek: currentMediaStartMoment?.format("dddd"),
-            hasPrequel: Common.hasPrequel(media.relations.edges),
-            hasSequel: Common.hasSequel(media.relations.edges),
-            status: media.status,
-            address: media.siteUrl
+            anilist: {
+                id: media.id,
+                title: media.title.romaji,
+                type: media.type,
+                format: media.format,
+                season: media.season,
+                seasonYear: media.seasonYear,
+                genres: media.genres.join(','),
+                numberOfEpisodes: media.episodes,
+                startDate: currentMediaStartMoment?.format("YYYY-MM-DD"),
+                startWeekNumber: currentMediaStartMoment?.format("W"),
+                startDayOfWeek: currentMediaStartMoment?.format("dddd"),
+                hasPrequel: Common.hasPrequel(media.relations.edges),
+                hasSequel: Common.hasSequel(media.relations.edges),
+                status: media.status,
+                address: media.siteUrl
+            }
         };
         return item;
     }
@@ -256,11 +258,11 @@ class AniList {
         let mediaList = [...response.data.Page.media];
         for (let index = 0; index < mediaList.length; index++) {
             let currentMedia = mediaList[index];
-            // default properties
+            // anilist properties
             let item = this.parseAnimeMedia(currentMedia);
             // push parsed item
             parsedResponse.push(item);
-            Log.trace(`anilist : parsed anime entry : [ ${item.id}, ${item.title}, ${item.season}, ${item.seasonYear} ]`);
+            Log.trace(`anilist : parsed anime entry : [ ${item.anilist.id}, ${item.anilist.title}, ${item.anilist.season}, ${item.anilist.seasonYear} ]`);
         }
         return parsedResponse;
     }
@@ -275,14 +277,16 @@ class AniList {
             for (let indexEntry = 0; indexEntry < entries.length; indexEntry++) {
                 let currentEntry = entries[indexEntry];
                 let currentMedia = currentEntry.media;
-                // default properties
+                // anilist properties
                 let item = this.parseAnimeMedia(currentMedia);
-                // custom properties
-                item.personalStatus = currentEntry.status;
-                item.userName = userName;
+                // personal properties
+                item.personal = { 
+                    status: currentEntry.status,
+                    userName: userName
+                };
                 // push parsed item
                 parsedResponse.push(item);
-                Log.trace(`anilist : parsed anime entry : [ ${userName}, ${item.id}, ${item.title}, ${item.personalStatus} ]`);
+                Log.trace(`anilist : parsed anime entry : [ ${userName}, ${item.anilist.id}, ${item.anilist.title}, ${item.personal.status} ]`);
             }
         }
         return parsedResponse;

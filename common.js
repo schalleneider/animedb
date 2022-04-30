@@ -1,5 +1,7 @@
 import moment from 'moment';
 
+import { Log } from './log.js';
+
 class Common {
 
     static sleep(miliseconds) {
@@ -67,6 +69,8 @@ class Common {
                         parsedThemes.push(Common.unparsedTheme(type, currentTheme));
                     }
                 }
+
+                Log.trace(`common : parsed anime theme : [ ${currentTheme} ]`);
             }
         }
         return parsedThemes;

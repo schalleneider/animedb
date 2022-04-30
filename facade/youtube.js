@@ -133,8 +133,11 @@ class YouTube {
                     
                             let detailInfo = this.parseDetail(items[index], index);
 
-                            detailInfo.themeId = currentTheme.ThemeId;
-                            detailInfo.rank = this.calculateRank(detailInfo, currentTheme);
+                            detailInfo.theme = {
+                                id: currentTheme.ThemeId
+                            };
+
+                            detailInfo.youtube.rank = this.calculateRank(detailInfo, currentTheme);
                 
                             searchMediaList.push(detailInfo);
                         }
@@ -180,19 +183,22 @@ class YouTube {
 
     parseDetail(info, index) {
         let item = {
-            keyId: info.id,
-            title: info.snippet.title,
-            description: info.snippet.description,
-            duration: info.contentDetails.duration,
-            durationSeconds: Common.convertISO8601ToSeconds(info.contentDetails.duration),
-            numberOfViews: info.statistics.viewCount,
-            numberOfLikes: info.statistics.likeCount,
-            isLicensed: info.contentDetails.licensedContent,
-            isFirstResult: index === 0,
-            isBestRank: false,
-            rank: 0,
-            address: `https://www.youtube.com/watch?v=${info.id}`
+            youtube: {
+                keyId: info.id,
+                title: info.snippet.title,
+                description: info.snippet.description,
+                duration: info.contentDetails.duration,
+                durationSeconds: Common.convertISO8601ToSeconds(info.contentDetails.duration),
+                numberOfViews: info.statistics.viewCount,
+                numberOfLikes: info.statistics.likeCount,
+                isLicensed: info.contentDetails.licensedContent,
+                isFirstResult: index === 0,
+                isBestRank: false,
+                rank: 0,
+                address: `https://www.youtube.com/watch?v=${info.id}`
+            }
         };
+        Log.trace(`youtube : parsed media entry : [ ${item.youtube.keyId}, ${item.youtube.title} ]`);
         return item;
     }
 
@@ -201,57 +207,57 @@ class YouTube {
         let lengthLowerThreshold = 120;
         let lengthUpperThreshold = 480;
 
-        let finalRank = detailInfo.rank;
+        let finalRank = detailInfo.youtube.rank;
 
         // overranks licensed videos 
-        if (detailInfo.licensed === true && 
-            detailInfo.durationSeconds >= lengthLowerThreshold && 
-            detailInfo.durationSeconds <= lengthUpperThreshold && 
-            detailInfo.views >= 100000) {
+        if (detailInfo.youtube.licensed === true && 
+            detailInfo.youtube.durationSeconds >= lengthLowerThreshold && 
+            detailInfo.youtube.durationSeconds <= lengthUpperThreshold && 
+            detailInfo.youtube.views >= 100000) {
             finalRank += 5;
         }
         
         // ranks videos over threshold and underanks short videos
-        if (detailInfo.durationSeconds >= lengthLowerThreshold && 
-            detailInfo.durationSeconds <= lengthUpperThreshold) {
+        if (detailInfo.youtube.durationSeconds >= lengthLowerThreshold && 
+            detailInfo.youtube.durationSeconds <= lengthUpperThreshold) {
             finalRank += 1;
         } else {
             finalRank -= 5;
         }
 
         // ransks first video
-        if (detailInfo.first) {
+        if (detailInfo.youtube.first) {
             finalRank += 1;
         }
 
         // ranks videos over 100K views
-        if (detailInfo.views >= 100000) {
+        if (detailInfo.youtube.views >= 100000) {
             finalRank += 1;
         }
 
         // ranks videos over 1K likes
-        if (detailInfo.likes >= 1000) {
+        if (detailInfo.youtube.likes >= 1000) {
             finalRank += 1;
         }
 
         // ranks videos with artist / music on title or 
-        if (detailInfo.title.search(new RegExp(currentTheme.ThemeTitle, "i")) != -1 || 
-            detailInfo.title.search(new RegExp(currentTheme.ThemeArtist, "i")) != -1) {
+        if (detailInfo.youtube.title.search(new RegExp(currentTheme.ThemeTitle, "i")) != -1 || 
+            detailInfo.youtube.title.search(new RegExp(currentTheme.ThemeArtist, "i")) != -1) {
             finalRank += 1;
         }
 
         // down-ranks videos with TV on title / description
-        if (detailInfo.title.search(new RegExp("TV", "i")) != -1) {
+        if (detailInfo.youtube.title.search(new RegExp("TV", "i")) != -1) {
             finalRank -= 1;
         }
         
         // down-ranks videos with SHORT on title / description
-        if (detailInfo.title.search(new RegExp("SHORT", "i")) != -1) {
+        if (detailInfo.youtube.title.search(new RegExp("SHORT", "i")) != -1) {
             finalRank -= 1;
         }
 
         // down-ranks videos with SHORT on title / description
-        if (detailInfo.title.search(new RegExp("COVER", "i")) != -1) {
+        if (detailInfo.youtube.title.search(new RegExp("COVER", "i")) != -1) {
             finalRank -= 5;
         }
 
@@ -261,12 +267,12 @@ class YouTube {
     selectBestRank(mediaList) {
         if (mediaList) {
             mediaList.sort((first, second) => {
-                if (first.rank === second.rank) {
-                    return second.numberOfViews - first.numberOfViews;
+                if (first.youtube.rank === second.youtube.rank) {
+                    return second.youtube.numberOfViews - first.youtube.numberOfViews;
                 }
-                return second.rank - first.rank;
+                return second.youtube.rank - first.youtube.rank;
             })
-            mediaList[0].isBestRank = true;
+            mediaList[0].youtube.isBestRank = true;
         }
         return mediaList;
     }

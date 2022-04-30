@@ -1,143 +1,15 @@
 -- DROPS
 
-DROP VIEW v_MyAnimeListToScout;
+DROP VIEW v_AniListToScout;
 DROP VIEW v_ThemesToSearch;
 DROP VIEW v_MediasToSearch;
 DROP VIEW v_MyAnimeListScoutMismatch;
 DROP VIEW v_ThemesInError;
-
-DROP TABLE Personal;
-DROP TABLE AniList_MyAnimeList;
-DROP TABLE SourceType;
-DROP TABLE Media;
-DROP TABLE AniList;
-DROP TABLE MyAnimeList;
-DROP TABLE Theme;
-DROP TABLE Source;
-DROP TABLE User;
-
--- TABLES
-
-CREATE TABLE "User" (
-    "Id" INTEGER,
-    "Name" TEXT,
-    "CreatedOn" TEXT,
-    PRIMARY KEY("Id")
-);
-
-CREATE TABLE "SourceType" (
-    "Id" INTEGER,
-    "Key" TEXT,
-    "Name" TEXT,
-    "CreatedOn" TEXT,
-    PRIMARY KEY("Id")
-);
-
-CREATE TABLE "Source" (
-    "Id" INTEGER,
-    "KeyId" TEXT,
-    "ExternalId" INTEGER,
-    "SourceTypeId" INTEGER,
-    "CreatedOn" TEXT,
-    PRIMARY KEY("Id"),
-    UNIQUE("KeyId"),
-    FOREIGN KEY("SourceTypeId") REFERENCES "SourceType"("Id")
-);
-
-CREATE TABLE "AniList" (
-    "Id" INTEGER,
-    "Title" TEXT,
-    "Type" TEXT,
-    "Format" TEXT,
-    "Season" TEXT,
-    "SeasonYear" INTEGER,
-    "Genres" TEXT,
-    "NumberOfEpisodes" INTEGER,
-    "StartDate" TEXT,
-    "StartWeekNumber" INTEGER,
-    "StartDayOfWeek" TEXT,
-    "HasPrequel" INTEGER,
-    "HasSequel" INTEGER,
-    "Status" TEXT,
-    "Address" TEXT,
-    "CreatedOn" TEXT,
-    "LastModifiedOn" TEXT,
-    PRIMARY KEY("Id")
-);
-
-CREATE TABLE "MyAnimeList" (
-    "Id" INTEGER,
-    "Title" TEXT,
-    "Type" TEXT,
-    "Season" TEXT,
-    "SeasonYear" TEXT,
-    "NumberOfEpisodes" INTEGER,
-    "StartDate" TEXT,
-    "EndDate" TEXT,
-    "Status" TEXT,
-    "CreatedOn" TEXT,
-    "LastModifiedOn" TEXT,
-    PRIMARY KEY("Id")
-);
-
-CREATE TABLE "AniList_MyAnimeList" (
-    "AniListId" INTEGER,
-    "MyAnimeListId" INTEGER,
-    "CreatedOn" TEXT,
-    "LastModifiedOn" TEXT,
-    PRIMARY KEY("MyAnimeListId","AniListId"),
-    FOREIGN KEY("MyAnimeListId") REFERENCES "MyAnimeList"("Id"),
-    FOREIGN KEY("AniListId") REFERENCES "AniList"("Id")
-);
-
-CREATE TABLE "Personal" (
-    "UserId" INTEGER,
-    "AniListId" INTEGER,
-    "Status" TEXT,
-    "CreatedOn" TEXT,
-    PRIMARY KEY("AniListId","UserId"),
-    FOREIGN KEY("AniListId") REFERENCES "AniList"("Id"),
-    FOREIGN KEY("UserId") REFERENCES "User"("Id")
-);
-
-CREATE TABLE "Theme" (
-    "Id" INTEGER,
-    "KeyId" TEXT,
-	"Theme" TEXT,
-    "Artist" TEXT,
-    "Title" TEXT,
-    "Type" TEXT,
-    "Sequence" INTEGER,
-	"Algorithm" TEXT,
-    "CreatedOn" TEXT,
-    PRIMARY KEY("Id"),
-    FOREIGN KEY("KeyId") REFERENCES "Source"("KeyId")
-);
-
-CREATE TABLE "Media" (
-    "Id" INTEGER,
-    "ThemeId" INTEGER,
-    "KeyId" TEXT,
-    "Title" TEXT,
-    "Description" TEXT,
-    "Duration" TEXT,
-    "DurationSeconds" INTEGER,
-    "NumberOfViews" INTEGER,
-    "NumberOfLikes" INTEGER,
-    "IsLicensed" INTEGER,
-    "IsFirstResult" INTEGER,
-    "IsBestRank" INTEGER,
-    "Rank" INTEGER,
-    "Address" TEXT,
-    "CreatedOn" TEXT,
-    "LastModifiedOn" TEXT,
-    PRIMARY KEY("Id")
-    FOREIGN KEY("ThemeId") REFERENCES "Theme"("Id")
-);
+DROP VIEW v_PersonalList;
 
 -- VIEWS
 
-CREATE VIEW v_MyAnimeListToScout
+CREATE VIEW v_AniListToScout
 AS
 	SELECT
         AniList.Id AniListId,
@@ -330,3 +202,22 @@ AS
     INNER JOIN AniList ON AniList.Id = AniList_MyAnimeList.AniListId
     WHERE 
         Theme.Algorithm IN ('ERROR');
+
+CREATE VIEW v_PersonalList
+AS
+	SELECT
+        AniList.Id AniListId,
+        AniList.Title AniListTitle,
+        AniList.Type AniListType,
+        AniList.Format AniListFormat,
+        AniList.Season AniListSeason,
+        AniList.SeasonYear AniListSeasonYear,
+        AniList.NumberOfEpisodes AniListNumberOfEpisodes,
+        AniList.StartDate AniListStartDate,
+        AniList.Status AniListStatus,
+        AniList.Address AniListAddress,
+        Personal.Status PersonalStatus,
+        User.Name UserName
+	FROM AniList
+	INNER JOIN Personal ON Personal.AniListId = AniList.Id
+	INNER JOIN User ON User.Id = Personal.UserId;

@@ -27,16 +27,28 @@ let commandOptions = {
 let requiredOptions = [ 'env', 'source', 'archive'];
 
 let argv = (yargs)(process.argv.slice(2))
-    .usage('usage: main.js <command> [options]')
+    .usage('usage: ./animedb.exe <command> [options]')
     .command({
         command: 'seasons [options]',
         desc: 'imports anime information based on a season list',
         builder: (yargs) => { yargs
             .options(commandOptions)
-            .demandOption(requiredOptions, "example: node main.js seasons --env=dev --source='anilist|myanimelist'")
+            .demandOption(requiredOptions, "example: ./animedb.exe seasons --env=env --source='anilist|myanimelist'")
         },
         handler: async (argv) =>  {
             await (new Program(argv.env).runSeasons(argv.source, argv.archive, argv.archivePath));
+            Log.info('main : seasons command completed...');
+        }
+    })
+    .command({
+        command: 'pick [options]',
+        desc: 'imports anime information based on a specific list of identifiers',
+        builder: (yargs) => { yargs
+            .options(commandOptions)
+            .demandOption(requiredOptions, "example: ./animedb.exe seasons --env=env --source='animedb'")
+        },
+        handler: async (argv) =>  {
+            await (new Program(argv.env).runPick(argv.source, argv.archive, argv.archivePath));
             Log.info('main : seasons command completed...');
         }
     })
@@ -45,7 +57,7 @@ let argv = (yargs)(process.argv.slice(2))
         desc: 'imports anime information based on a personal list',
         builder: (yargs) => { yargs
             .options(commandOptions)
-            .demandOption(requiredOptions, "example: node main.js personal --env=dev --source='anilist'")
+            .demandOption(requiredOptions, "example: ./animedb.exe personal --env=env --source='anilist'")
         },
         handler: async (argv) => {
             await (new Program(argv.env).runPersonal(argv.source, argv.archive, argv.archivePath));
@@ -57,7 +69,7 @@ let argv = (yargs)(process.argv.slice(2))
         desc: 'scout anime information on myanimelist based on anilist entries',
         builder: (yargs) => { yargs
             .options(commandOptions)
-            .demandOption(requiredOptions, "example: node main.js scout --env=dev --source='myanimelist'")
+            .demandOption(requiredOptions, "example: ./animedb.exe scout --env=env --source='myanimelist'")
         },
         handler: async (argv) => {
             await (new Program(argv.env).runScout(argv.source, argv.archive, argv.archivePath));
@@ -69,7 +81,7 @@ let argv = (yargs)(process.argv.slice(2))
         desc: 'imports opening and ending themes from myanimelist',
         builder: (yargs) => { yargs
             .options(commandOptions)
-            .demandOption(requiredOptions, "example: node main.js themes --env=dev --source='myanimelist'")
+            .demandOption(requiredOptions, "example: ./animedb.exe themes --env=env --source='myanimelist'")
         },
         handler: async (argv) => {
             await (new Program(argv.env).runThemes(argv.source, argv.archive, argv.archivePath));
@@ -81,7 +93,7 @@ let argv = (yargs)(process.argv.slice(2))
         desc: 'imports media information for themes from youtube',
         builder: (yargs) => { yargs
             .options(commandOptions)
-            .demandOption(requiredOptions, "example: node main.js medias --env=dev --source='youtube'")
+            .demandOption(requiredOptions, "example: ./animedb.exe medias --env=env --source='youtube'")
         },
         handler: async (argv) => {
             await (new Program(argv.env).runMedias(argv.source, argv.archive, argv.archivePath));

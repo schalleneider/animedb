@@ -59,6 +59,38 @@ class Program {
             Log.fatal(error.stack);
         }
     }
+
+    async runPick(source, fromArchive = false, archivePath) {
+        try {
+            Log.info(`program : pick command : [ ${source}, ${Config.configFile} ]`);
+
+            await this.database.init();
+
+            let aniListFacade = this.buildFacade('anilist');
+            let myAnimeListFacade = this.buildFacade('myanimelist');
+            
+            let animes = [];
+
+            if (fromArchive) {
+                animes = Archive.load(archivePath)
+            } else {
+                //animes = await facade.getAnimeBySeasons(Config.commandSeasons, fromArchive);
+            }
+            
+            if (animes && animes.length > 0) {
+                //await facade.saveAnime(animes);
+            } else {
+                Log.warn(`program : pick command : no data to save : [ ${source}, ${Config.configFile} ]`);
+            }
+            
+        } catch (error) {
+            if (error.isAxiosError) {
+                Log.fatal(error.response.data.errors);
+            }
+            Log.fatal(error.message);
+            Log.fatal(error.stack);
+        }
+    }
     
     async runPersonal(source, fromArchive = false, archivePath) {
         try {
