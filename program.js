@@ -6,6 +6,7 @@ import { Database } from './database.js';
 import { AniList } from './facade/anilist.js';
 import { MyAnimeList } from './facade/myanimelist.js';
 import { YouTube } from './facade/youtube.js';
+import { AnimeDB } from './facade/animedb.js';
 
 class Program {
 
@@ -24,7 +25,10 @@ class Program {
             
             case 'youtube':
                 return new YouTube(this.database);
-                
+
+            case 'animedb':
+                return new AnimeDB(this.database);
+            
             default:
                 throw new Error(`source '${source}' is not implemented.`);
         }
@@ -42,7 +46,7 @@ class Program {
             if (fromArchive) {
                 animes = Archive.load(archivePath)
             } else {
-                animes = await facade.getAnimeBySeasons(Config.commandSeasons, fromArchive);
+                animes = await facade.getAnimeBySeasons(Config.commandSeasons);
             }
             
             if (animes && animes.length > 0) {
@@ -66,19 +70,17 @@ class Program {
 
             await this.database.init();
 
-            let aniListFacade = this.buildFacade('anilist');
-            let myAnimeListFacade = this.buildFacade('myanimelist');
-            
+            let facade = this.buildFacade('animedb');
             let animes = [];
 
             if (fromArchive) {
                 animes = Archive.load(archivePath)
             } else {
-                //animes = await facade.getAnimeBySeasons(Config.commandSeasons, fromArchive);
+                animes = await facade.getAnimeByPickList(Config.commandPick);
             }
             
             if (animes && animes.length > 0) {
-                //await facade.saveAnime(animes);
+                await facade.savePick(animes);
             } else {
                 Log.warn(`program : pick command : no data to save : [ ${source}, ${Config.configFile} ]`);
             }

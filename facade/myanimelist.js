@@ -73,6 +73,59 @@ class MyAnimeList {
         return animeList;
     }
 
+    async getAnimeByPickList(criteria) {
+        
+        let animeList = [];
+
+        let baseUrl = "https://api.myanimelist.net/v2/anime";
+        
+        for (let identifierIndex = 0; identifierIndex < criteria.list.length; identifierIndex++) {
+            
+            const currentIdentifier = criteria.list[identifierIndex];
+
+            Log.info(`anilist : getting myanimelist pick : [ ${currentIdentifier.myAnimeListId} ]`);
+
+            let authHeader = JSON.parse(`{ "${this.auth.header}" : "${this.auth.value}" }`);
+
+            axiosRetry(axios, { retries: 3, retryDelay: (5 * 1000) });
+
+            const config = {
+                url: `${baseUrl}/${currentIdentifier.myAnimeListId}`,
+                method: 'GET',
+                headers: authHeader,
+                params: {
+                    fields: 'id,title,start_date,end_date,media_type,status,num_episodes,start_season'
+                }
+            };
+
+            try {
+                
+                const response = await axios(config);
+
+                let parsedResponse = this.parseAnimePickResponse(response.data);
+
+                parsedResponse.anilist = {
+                    id: currentIdentifier.aniListId
+                };
+
+                animeList = animeList.concat(parsedResponse);
+
+            } catch (error) {
+                if (error.isAxiosError) {
+                    Log.warn(`[ ${currentIdentifier.myAnimeListId} ] : ${JSON.stringify(error.response.data)}`);
+                } else {
+                    Log.error(`[ ${currentIdentifier.myAnimeListId} ] : ${error.message}`);
+                }
+            }
+
+            await Common.sleep(criteria.delay);
+        }
+
+        Archive.save(animeList, 'myanimelist_pick');
+
+        return animeList;
+    }
+
     async getAnimeByPersonalList(config) {
         Log.warn('myanimelist : personal command is not supported : see --help for more information');
     }
@@ -151,9 +204,9 @@ class MyAnimeList {
 
         let entries = await this.database.getMyAnimeList(criteria);
         
-        for (let aniListIndex = 0; aniListIndex < entries.length; aniListIndex++) {
+        for (let myAnimeListIndex = 0; myAnimeListIndex < entries.length; myAnimeListIndex++) {
             
-            const currentEntry = entries[aniListIndex];
+            const currentEntry = entries[myAnimeListIndex];
 
             Log.info(`myanimelist : getting anime themes : [ ${currentEntry.MyAnimeListTitle} ]`);
 
@@ -203,6 +256,12 @@ class MyAnimeList {
         await this.database.saveMyAnimeList(animes);
     }
     
+    async savePick(animes) {
+        Log.info(`myanimelist : saving pick anime : [ ${animes.length} entries ]`);
+        await this.database.saveMyAnimeList(animes);
+        await this.database.saveScout(animes);
+    }
+
     async savePersonal(animes) {
         Log.warn('myanimelist : personal command is not supported : see --help for more information');
     }
@@ -263,6 +322,13 @@ class MyAnimeList {
             Log.trace(`myanimelist : parsed anime entry : [ ${item.myanimelist.id}, ${item.myanimelist.title}, ${item.myanimelist.season}, ${item.myanimelist.seasonYear} ]`);
         }
         return parsedResponse;
+    }
+
+    parseAnimePickResponse(response) {
+        // myanimelist properties
+        let item = this.parseAnimeNode(response);
+        Log.trace(`myanimelist : parsed anime entry : [ ${item.myanimelist.id}, ${item.myanimelist.title}, ${item.myanimelist.season}, ${item.myanimelist.seasonYear} ]`);
+        return item;
     }
 
     parseAnimeThemesResponse(response) {

@@ -32,6 +32,10 @@ class YouTube {
         Log.warn('youtube : seasons command is not supported : see --help for more information');
     }
 
+    async getAnimeByPickList(criteria) {
+        Log.warn('youtube : pick command is not supported : see --help for more information');
+    }
+
     async getAnimeByPersonalList(config) {
         Log.warn('youtube : personal command is not supported : see --help for more information');
     }
@@ -164,6 +168,10 @@ class YouTube {
         Log.warn('youtube : seasons command is not supported : see --help for more information');
     }
     
+    async savePick(animes) {
+        Log.warn('youtube : pick command is not supported : see --help for more information');
+    }
+
     async savePersonal(animes) {
         Log.warn('youtube : personal command is not supported : see --help for more information');
     }

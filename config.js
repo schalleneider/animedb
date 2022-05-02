@@ -41,6 +41,10 @@ class Config {
         return Config.config.command.seasons;
     }
 
+    static get commandPick() {
+        return Config.config.command.pick;
+    }
+    
     static get commandPersonal() {
         return Config.config.command.personal;
     }
