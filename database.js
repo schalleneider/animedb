@@ -580,7 +580,7 @@ class Database {
                     execResults.updated++;
                 } else {
                     await this.exec({
-                        query: `INSERT INTO Media (Id, ThemeId, KeyId, Title, Description, Duration, DurationSeconds, NumberOfViews, NumberOfLikes, IsLicensed, IsFirstResult, IsBestRank, Rank, Address, CreatedOn, LastModifiedOn) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                        query: `INSERT INTO Media (Id, ThemeId, KeyId, Title, Description, Duration, DurationSeconds, NumberOfViews, NumberOfLikes, IsLicensed, IsFirstResult, IsBestRank, IsDownloadReady, Rank, Address, CreatedOn, LastModifiedOn) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                         params: [
                             currentMediaYouTube.id,
                             currentMediaTheme.id,
@@ -594,6 +594,7 @@ class Database {
                             currentMediaYouTube.isLicensed,
                             currentMediaYouTube.isFirstResult,
                             currentMediaYouTube.isBestRank,
+                            0,
                             currentMediaYouTube.rank,
                             currentMediaYouTube.address,
                             Common.getMomentNowFormat(),

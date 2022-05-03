@@ -121,6 +121,7 @@ CREATE TABLE "Media" (
     "IsLicensed" INTEGER,
     "IsFirstResult" INTEGER,
     "IsBestRank" INTEGER,
+    "IsDownloadReady" INTEGER,
     "Rank" INTEGER,
     "Address" TEXT,
     "CreatedOn" TEXT,

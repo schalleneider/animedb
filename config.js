@@ -64,6 +64,18 @@ class Config {
     static get myAnimeListAuth() {
         return Config.config.myanimelist.auth;
     }
+
+    static get myAnimeListRegexSearchQuery() {
+        return Config.config.myanimelist.regex.searchQuery;
+    }
+
+    static get myAnimeListRegexThemeParseDefault() {
+        return Config.config.myanimelist.regex.themeParseDefault;
+    }
+
+    static get myAnimeListRegexThemeParseNoMatch() {
+        return Config.config.myanimelist.regex.themeParseNoMatch;
+    }
     
     static get youtubeAuth() {
         return Config.config.youtube.auth;

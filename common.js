@@ -1,6 +1,7 @@
 import moment from 'moment';
 
 import { Log } from './log.js';
+import { Config } from './config.js';
 
 class Common {
 
@@ -48,8 +49,8 @@ class Common {
         
         if (themes) {
 
-            const regexDefault = /^((#)?)(([0-9]+)?)((:)?)(([ "]+)?)((.)*?)((\((.+)\))?)(("+)?)( (b|B)y )((.)*?)((\((.+)\))?)$/;
-            const regexNoMatch = /^((#)?)(([0-9]+)?)((:)?)(([ "]+)?)((.)*?)((\((.+)\))?)(" )((.)*?)((\((.+)\))?)$/;
+            const regexDefault = new RegExp(Config.myAnimeListRegexThemeParseDefault);
+            const regexNoMatch = new RegExp(Config.myAnimeListRegexThemeParseNoMatch);
             
             for (let index = 0; index < themes.length; index++) {
 

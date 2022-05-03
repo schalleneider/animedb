@@ -142,7 +142,7 @@ class MyAnimeList {
             
             const currentEntry = entries[aniListIndex];
 
-            let query = currentEntry.AniListTitle.replace(/[^\w\s]/gi, '').substring(0, criteria.queryLengthLimit);
+            let query = currentEntry.AniListTitle.replace(new RegExp(Config.myAnimeListRegexSearchQuery, "gi"), '').substring(0, criteria.queryLengthLimit);
 
             Log.info(`myanimelist : scouting anime : [ ${currentEntry.AniListTitle}, ${currentEntry.AniListStartDate} ]`);
 
