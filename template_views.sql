@@ -63,7 +63,7 @@ AS
     INNER JOIN User ON User.Id = Personal.UserId
     WHERE 
         Personal.Status NOT IN ('DROPPED')
-        MyAnimeList.Id NOT IN (
+    AND MyAnimeList.Id NOT IN (
             SELECT DISTINCT 
                 Source.ExternalId 
             FROM Source
