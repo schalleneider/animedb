@@ -6,6 +6,9 @@ DROP VIEW v_MediasToSearch;
 DROP VIEW v_MyAnimeListScoutMismatch;
 DROP VIEW v_ThemesInError;
 DROP VIEW v_PersonalList;
+DROP VIEW v_AniList;
+DROP VIEW v_MyAnimeList;
+DROP VIEW v_Themes;
 
 -- VIEWS
 
@@ -222,3 +225,124 @@ AS
 	FROM AniList
 	INNER JOIN Personal ON Personal.AniListId = AniList.Id
 	INNER JOIN User ON User.Id = Personal.UserId;
+
+CREATE VIEW v_Anilist
+AS
+    SELECT
+        AniList.Id AniListId,
+        AniList.Title AniListTitle,
+        AniList.Type AniListType,
+        AniList.Format AniListFormat,
+        AniList.Season AniListSeason,
+        AniList.SeasonYear AniListSeasonYear,
+        AniList.Genres AniListGenres,
+        AniList.NumberOfEpisodes AniListNumberOfEpisodes,
+        AniList.StartDate AniListStartDate,
+        AniList.StartWeekNumber AniListStartWeekNumber,
+        AniList.StartDayOfWeek AniListStartDayOfWeek,
+        AniList.HasPrequel AniListHasPrequel,
+        AniList.HasSequel AniListHasSequel,
+        AniList.Status AniListStatus,
+        AniList.Address AniListAddress,
+        AniList.CreatedOn AniListCreatedOn,
+        AniList.LastModifiedOn AniListLastModifiedOn,
+        Personal.Status PersonalStatus,
+        User.Name UserName
+    FROM AniList
+	INNER JOIN Personal ON Personal.AniListId = Anilist.Id
+	INNER JOIN User ON User.Id = Personal.UserId
+    ORDER BY 
+        AniList.Id ASC;
+
+CREATE VIEW v_MyAnimeList
+AS
+    SELECT
+        MyAnimeList.Id MyAnimeListId,
+        MyAnimeList.Title MyAnimeListTitle,
+        MyAnimeList.Type MyAnimeListType,
+        MyAnimeList.Season MyAnimeListSeason,
+        MyAnimeList.SeasonYear MyAnimeListSeasonYear,
+        MyAnimeList.NumberOfEpisodes MyAnimeListNumberOfEpisodes,
+        MyAnimeList.StartDate MyAnimeListStartDate,
+        MyAnimeList.EndDate MyAnimeListEndDate,
+        MyAnimeList.Status MyAnimeListStatus,
+        MyAnimeList.CreatedOn MyAnimeListCreatedOn,
+        MyAnimeList.LastModifiedOn MyAnimeListLastModifiedOn,
+        AniList.Id AniListId,
+        AniList.Title AniListTitle,
+        AniList.Type AniListType,
+        AniList.Format AniListFormat,
+        AniList.Season AniListSeason,
+        AniList.SeasonYear AniListSeasonYear,
+        AniList.Genres AniListGenres,
+        AniList.NumberOfEpisodes AniListNumberOfEpisodes,
+        AniList.StartDate AniListStartDate,
+        AniList.StartWeekNumber AniListStartWeekNumber,
+        AniList.StartDayOfWeek AniListStartDayOfWeek,
+        AniList.HasPrequel AniListHasPrequel,
+        AniList.HasSequel AniListHasSequel,
+        AniList.Status AniListStatus,
+        AniList.Address AniListAddress,
+        AniList.CreatedOn AniListCreatedOn,
+        AniList.LastModifiedOn AniListLastModifiedOn,
+        Personal.Status PersonalStatus,
+        User.Name UserName
+    FROM MyAnimeList
+    INNER JOIN AniList_MyAnimeList ON AniList_MyAnimeList.MyAnimeListId = MyAnimeList.Id 
+    INNER JOIN AniList ON AniList.Id = AniList_MyAnimeList.AniListId
+	INNER JOIN Personal ON Personal.AniListId = Anilist.Id
+	INNER JOIN User ON User.Id = Personal.UserId
+    ORDER BY 
+        MyAnimeList.Id ASC;    
+
+CREATE VIEW v_Themes
+AS
+    SELECT
+        Theme.Id ThemeId,
+        Theme.KeyId ThemeKeyId,
+        Theme.Theme ThemeTheme,
+        Theme.Artist ThemeArtist,
+        Theme.Title ThemeTitle,
+        Theme.Type ThemeType,
+        Theme.Sequence ThemeSequence,
+        Theme.Algorithm ThemeAlgorithm,
+        MyAnimeList.Id MyAnimeListId,
+        MyAnimeList.Title MyAnimeListTitle,
+        MyAnimeList.Type MyAnimeListType,
+        MyAnimeList.Season MyAnimeListSeason,
+        MyAnimeList.SeasonYear MyAnimeListSeasonYear,
+        MyAnimeList.NumberOfEpisodes MyAnimeListNumberOfEpisodes,
+        MyAnimeList.StartDate MyAnimeListStartDate,
+        MyAnimeList.EndDate MyAnimeListEndDate,
+        MyAnimeList.Status MyAnimeListStatus,
+        MyAnimeList.CreatedOn MyAnimeListCreatedOn,
+        MyAnimeList.LastModifiedOn MyAnimeListLastModifiedOn,
+        AniList.Id AniListId,
+        AniList.Title AniListTitle,
+        AniList.Type AniListType,
+        AniList.Format AniListFormat,
+        AniList.Season AniListSeason,
+        AniList.SeasonYear AniListSeasonYear,
+        AniList.Genres AniListGenres,
+        AniList.NumberOfEpisodes AniListNumberOfEpisodes,
+        AniList.StartDate AniListStartDate,
+        AniList.StartWeekNumber AniListStartWeekNumber,
+        AniList.StartDayOfWeek AniListStartDayOfWeek,
+        AniList.HasPrequel AniListHasPrequel,
+        AniList.HasSequel AniListHasSequel,
+        AniList.Status AniListStatus,
+        AniList.Address AniListAddress,
+        AniList.CreatedOn AniListCreatedOn,
+        AniList.LastModifiedOn AniListLastModifiedOn,
+        Personal.Status PersonalStatus,
+        User.Name UserName
+    FROM Theme
+    INNER JOIN Source ON Source.KeyId = Theme.KeyId 
+    INNER JOIN SourceType ON SourceType.Id = Source.SourceTypeId AND SourceType.Name = 'MyAnimeList'
+    INNER JOIN MyAnimeList ON MyAnimeList.Id = Source.ExternalId 
+    INNER JOIN AniList_MyAnimeList ON AniList_MyAnimeList.MyAnimeListId = MyAnimeList.Id 
+    INNER JOIN AniList ON AniList.Id = AniList_MyAnimeList.AniListId
+	INNER JOIN Personal ON Personal.AniListId = Anilist.Id
+	INNER JOIN User ON User.Id = Personal.UserId
+    ORDER BY 
+        Anilist.Id ASC;

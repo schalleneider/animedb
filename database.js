@@ -551,8 +551,11 @@ class Database {
             try {
 
                 const currentExists = await this.select({
-                    query: `SELECT Id FROM Media WHERE KeyId = ?`,
-                    params: [currentMediaYouTube.keyId]
+                    query: `SELECT Id FROM Media WHERE KeyId = ? AND ThemeId = ?`,
+                    params: [
+                        currentMediaYouTube.keyId,
+                        currentMediaTheme.id
+                    ]
                 });
 
                 if (currentExists) {
