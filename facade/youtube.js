@@ -28,6 +28,22 @@ class YouTube {
         this.keyFilePoolIndex++;
     }
 
+    async checkForQuota(error) {
+        // quota exeeded
+        if (error.code === 403 && error?.errors[0]?.reason === "quotaExceeded") {
+            if (this.keyFilePoolIndex < this.keyFilePool.length) {
+                let mustReAuth = await Prompt.askConfirmation(`[ quotaExeeded ] response received. proceed with the reauthentication with the next key ?`);
+                if (mustReAuth) {
+                    this.auth();
+                }
+                return true;
+            } else {
+                Log.error('no more key are available in the pool for reauthentication.');
+            }
+        }
+        return false;
+    }
+
     async getAnimeBySeasons(config) {
         Log.warn('youtube : seasons command is not supported : see --help for more information');
     }
@@ -63,96 +79,92 @@ class YouTube {
             Log.info(`youtube : searching media results : [ ${currentTheme.ThemeArtist} - ${currentTheme.ThemeTitle} ]`);
             
             let searchResults = [];
+            let searchResultsCompleted = false;
 
-            try {
+            while (!searchResultsCompleted) {
 
-                const paramsSearch = {
-                    part: 'id,snippet',
-                    order: 'relevance',
-                    type: 'video',
-                    q: `${currentTheme.ThemeTitle} ${currentTheme.ThemeArtist}`,
-                };
+                try {
 
-                const response = await this.youtube.search.list(paramsSearch);
+                    const paramsSearch = {
+                        part: 'id,snippet',
+                        order: 'relevance',
+                        type: 'video',
+                        q: `${currentTheme.ThemeTitle} ${currentTheme.ThemeArtist}`,
+                    };
 
-                if (response.status === 200) {
+                    const response = await this.youtube.search.list(paramsSearch);
 
-                    let items = response.data.items;
+                    if (response.status === 200) {
 
-                    for (let index = 0; index < items.length; index++) {
-                        searchResults.push(items[index].id.videoId);
+                        let items = response.data.items;
+
+                        for (let index = 0; index < items.length; index++) {
+                            searchResults.push(items[index].id.videoId);
+                        }
+
+                    } else {
+                        Log.warn(`[ ${currentTheme.ThemeArtist} - ${currentTheme.ThemeTitle} ] : ${response}`);
                     }
 
-                } else {
+                    searchResultsCompleted = true;
 
-                    Log.warn(`[ ${currentTheme.ThemeArtist} - ${currentTheme.ThemeTitle} ] : ${response}`);
-
-                    // quota exeeded
-                    if (response.status === 403) { 
-
-                        let mustReAuth = await Prompt.askConfirmation(`[ 403 ] status received. proceed with the reauthentication ?`);
-            
-                        if (mustReAuth) {
-                            this.auth();
-                            index--; // retry current index
-                        }                        
-                    }
+                } catch (error) {
+                    Log.error(`[ ${currentTheme.ThemeArtist} - ${currentTheme.ThemeTitle} ] : ${error.message}`);
+                    searchResultsCompleted = !(await this.checkForQuota(error));
                 }
-            } catch (error) {
-                Log.error(`[ ${currentTheme.ThemeArtist} - ${currentTheme.ThemeTitle} ] : ${error.message}`);
             }
 
             if (searchResults.length > 0) {
 
                 Log.info(`youtube : listing video details : [ ${currentTheme.ThemeArtist} - ${currentTheme.ThemeTitle} ]`);
+
+                let listResultsCompleted = false;
             
-                try {
+                while (!listResultsCompleted) {
+                    try {
 
-                    const paramsVideos = {
-                        part: [
-                            'snippet',
-                            'contentDetails',
-                            'statistics'
-                        ],
-                        id: searchResults
-                    };
-    
-                    const response = await this.youtube.videos.list(paramsVideos);
-    
-                    if (response.status === 403) { // quota exeeded
-                        if (keyFilePoolIndex < keyFilePool.length) {
-                            keyFilePoolIndex++;
-                            this.auth(keyFilePool[keyFilePoolIndex]);
-                        }
-                        index--; // retry
-                    }
+                        const paramsVideos = {
+                            part: [
+                                'snippet',
+                                'contentDetails',
+                                'statistics'
+                            ],
+                            id: searchResults
+                        };
+        
+                        const response = await this.youtube.videos.list(paramsVideos);
 
-                    if (response.status === 200) {
+                        if (response.status === 200) {
 
-                        let items = response.data.items;
+                            let items = response.data.items;
+                            
+                            let searchMediaList = [];
+
+                            for (let index = 0; index < items.length; index++) {
                         
-                        let searchMediaList = [];
+                                let detailInfo = this.parseDetail(items[index], index);
 
-                        for (let index = 0; index < items.length; index++) {
+                                detailInfo.theme = {
+                                    id: currentTheme.ThemeId
+                                };
+
+                                detailInfo.youtube.rank = this.calculateRank(detailInfo, currentTheme);
                     
-                            let detailInfo = this.parseDetail(items[index], index);
+                                searchMediaList.push(detailInfo);
+                            }
 
-                            detailInfo.theme = {
-                                id: currentTheme.ThemeId
-                            };
+                            mediaList.push.apply(mediaList, this.selectBestRank(searchMediaList));
 
-                            detailInfo.youtube.rank = this.calculateRank(detailInfo, currentTheme);
-                
-                            searchMediaList.push(detailInfo);
+                        } else {
+                            Log.warn(`[ ${currentTheme.ThemeArtist} - ${currentTheme.ThemeTitle} ] : ${response}`);
                         }
 
-                        mediaList.push.apply(mediaList, this.selectBestRank(searchMediaList));
+                        listResultsCompleted = true;
 
-                    } else {
-                        Log.warn(`[ ${currentTheme.ThemeArtist} - ${currentTheme.ThemeTitle} ] : ${response}`);
+                    } catch (error) {
+                        Log.error(`[ ${currentTheme.ThemeArtist} - ${currentTheme.ThemeTitle} ] : ${error.message}`);
+                        listResultsCompleted = !(await this.checkForQuota(error));
                     }
-                } catch (error) {
-                    Log.error(`[ ${currentTheme.ThemeArtist} - ${currentTheme.ThemeTitle} ] : ${error.message}`);
                 }
             }
             
