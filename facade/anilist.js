@@ -105,80 +105,6 @@ class AniList {
         return animeList;
     }
 
-    async getAnimeByPickList(criteria) {
-        
-        let animeList = [];
-
-        let baseUrl = "https://graphql.anilist.co/api/v2/";
-    
-        let graphql = `query GetAnime($id: Int) {
-            Media(id: $id) {
-                id
-                title {
-                    romaji
-                }
-                startDate {
-                    year
-                    month
-                    day
-                }
-                season
-                seasonYear
-                type
-                episodes
-                status
-                siteUrl
-                format
-                genres
-                relations {
-                    edges {
-                        id
-                        relationType
-                    }
-                }
-            }
-        }`;
-
-        for (let identifierIndex = 0; identifierIndex < criteria.list.length; identifierIndex++) {
-            
-            const currentIdentifier = criteria.list[identifierIndex];
-
-            Log.info(`anilist : getting anime pick : [ ${currentIdentifier.aniListId} ]`);
-
-            axiosRetry(axios, { retries: 3, retryDelay: (5 * 1000) });
-
-            const config = {
-                url: baseUrl,
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                data: {
-                    query: graphql,
-                    variables: { 
-                        id: parseInt(currentIdentifier.aniListId)
-                    }
-                }
-            };
-
-            const response = await axios(config);
-
-            let parsedResponse = this.parseAnimeByMediaResponse(response.data);
-
-            parsedResponse.myanimelist = {
-                id: currentIdentifier.myAnimeListId
-            };
-
-            animeList = animeList.concat(parsedResponse);
-            
-            await Common.sleep(criteria.delay);
-        }
-
-        Archive.save(animeList, 'anilist_pick');
-
-        return animeList;
-    }
-
     async getAnimeByPersonalList(criteria) {
 
         let animeList = [];
@@ -277,13 +203,86 @@ class AniList {
         Log.warn('anilist : medias command is not supported : see --help for more information');
     }
 
-    async saveAnime(animes) {
-        Log.info(`anilist : saving anime : [ ${animes.length} entries ]`);
-        await this.database.saveAniList(animes);
+    async getAnimeByPickList(criteria) {
+        
+        let animeList = [];
+
+        let baseUrl = "https://graphql.anilist.co/api/v2/";
+    
+        let graphql = `query GetAnime($id: Int) {
+            Media(id: $id) {
+                id
+                title {
+                    romaji
+                }
+                startDate {
+                    year
+                    month
+                    day
+                }
+                season
+                seasonYear
+                type
+                episodes
+                status
+                siteUrl
+                format
+                genres
+                relations {
+                    edges {
+                        id
+                        relationType
+                    }
+                }
+            }
+        }`;
+
+        for (let identifierIndex = 0; identifierIndex < criteria.list.length; identifierIndex++) {
+            
+            const currentIdentifier = criteria.list[identifierIndex];
+
+            Log.info(`anilist : getting anime pick : [ ${currentIdentifier.aniListId} ]`);
+
+            axiosRetry(axios, { retries: 3, retryDelay: (5 * 1000) });
+
+            const config = {
+                url: baseUrl,
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                data: {
+                    query: graphql,
+                    variables: { 
+                        id: parseInt(currentIdentifier.aniListId)
+                    }
+                }
+            };
+
+            const response = await axios(config);
+
+            let parsedResponse = this.parseAnimeByMediaResponse(response.data);
+
+            parsedResponse.myanimelist = {
+                id: currentIdentifier.myAnimeListId
+            };
+
+            animeList = animeList.concat(parsedResponse);
+            
+            await Common.sleep(criteria.delay);
+        }
+
+        Archive.save(animeList, 'anilist_animepick');
+
+        return animeList;
     }
 
-    async savePick(animes) {
-        Log.info(`anilist : saving pick anime : [ ${animes.length} entries ]`);
+    async getMediaByPickList(criteria) {
+        Log.warn('anilist : mediapick command is not supported : see --help for more information');
+    }
+
+    async saveAnime(animes) {
+        Log.info(`anilist : saving anime : [ ${animes.length} entries ]`);
         await this.database.saveAniList(animes);
     }
     
@@ -303,6 +302,15 @@ class AniList {
 
     async saveMedias(medias) {
         Log.warn('anilist : medias command is not supported : see --help for more information');
+    }
+
+    async saveAnimePick(animes) {
+        Log.info(`anilist : saving anime pick : [ ${animes.length} entries ]`);
+        await this.database.saveAniList(animes);
+    }
+    
+    async saveMediaPick(animes) {
+        Log.warn('anilist : mediapick command is not supported : see --help for more information');
     }
 
     parseAnimeMedia(media) {

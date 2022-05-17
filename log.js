@@ -1,4 +1,5 @@
 import log4js from 'log4js';
+import { Config } from './config.js';
 
 class Log {
 
@@ -15,7 +16,7 @@ class Log {
                 errorsfilter: { type: 'logLevelFilter', appender: 'errors', level: 'error', maxLevel: 'fatal' }
             },
             categories: {
-                default: { appenders: [ 'console', 'datafilter', 'warnsfilter', 'errorsfilter' ], level: 'debug' }
+                default: { appenders: [ 'console', 'datafilter', 'warnsfilter', 'errorsfilter' ], level: Config.logLevel }
             }
         });
 

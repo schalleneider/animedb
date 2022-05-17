@@ -11,6 +11,7 @@ class YouTube {
     constructor(database) {
         this.database = database;
         this.youtube = google.youtube('v3');
+        this.autoReAuth = Config.youtubeAutoReAuth;
         this.keyFilePool = Config.youtubeAuth;
         this.keyFilePoolIndex = 0;
     }
@@ -32,13 +33,16 @@ class YouTube {
         // quota exeeded
         if (error.code === 403 && error?.errors[0]?.reason === "quotaExceeded") {
             if (this.keyFilePoolIndex < this.keyFilePool.length) {
-                let mustReAuth = await Prompt.askConfirmation(`[ quotaExeeded ] response received. proceed with the reauthentication with the next key ?`);
-                if (mustReAuth) {
+                let manualReAuth = false;
+                if (!this.autoReAuth) {
+                    manualReAuth = await Prompt.askConfirmation(`[ quotaExeeded ] response received. proceed with the reauthentication with the next key ?`);
+                }
+                if (this.autoReAuth || manualReAuth) {
                     this.auth();
                 }
                 return true;
             } else {
-                Log.error('no more key are available in the pool for reauthentication.');
+                Log.error('no more keys are available in the pool for reauthentication.');
             }
         }
         return false;
@@ -46,10 +50,6 @@ class YouTube {
 
     async getAnimeBySeasons(config) {
         Log.warn('youtube : seasons command is not supported : see --help for more information');
-    }
-
-    async getAnimeByPickList(criteria) {
-        Log.warn('youtube : pick command is not supported : see --help for more information');
     }
 
     async getAnimeByPersonalList(config) {
@@ -138,22 +138,23 @@ class YouTube {
 
                             let items = response.data.items;
                             
-                            let searchMediaList = [];
+                            let themeMediaList = [];
 
                             for (let index = 0; index < items.length; index++) {
                         
-                                let detailInfo = this.parseDetail(items[index], index);
+                                let detailInfo = this.parseDetail(items[index], index, "SEARCH");
 
-                                detailInfo.theme = {
-                                    id: currentTheme.ThemeId
-                                };
-
-                                detailInfo.youtube.rank = this.calculateRank(detailInfo, currentTheme);
+                                detailInfo.rank = this.calculateRank(detailInfo, currentTheme);
                     
-                                searchMediaList.push(detailInfo);
+                                themeMediaList.push(detailInfo);
                             }
 
-                            mediaList.push.apply(mediaList, this.selectBestRank(searchMediaList));
+                            mediaList.push({
+                                theme: {
+                                    id: currentTheme.ThemeId
+                                },
+                                youtube: this.selectBestRank(themeMediaList)
+                            });
 
                         } else {
                             Log.warn(`[ ${currentTheme.ThemeArtist} - ${currentTheme.ThemeTitle} ] : ${response}`);
@@ -166,6 +167,8 @@ class YouTube {
                         listResultsCompleted = !(await this.checkForQuota(error));
                     }
                 }
+            } else {
+                Log.info(`youtube : no results for media : [ ${currentTheme.ThemeArtist} - ${currentTheme.ThemeTitle} ]`);
             }
             
             await Common.sleep(criteria.delay);
@@ -176,12 +179,82 @@ class YouTube {
         return mediaList;
     }
 
-    async saveAnime(animes) {
-        Log.warn('youtube : seasons command is not supported : see --help for more information');
+    async getAnimeByPickList(criteria) {
+        Log.warn('youtube : animepick command is not supported : see --help for more information');
     }
     
-    async savePick(animes) {
-        Log.warn('youtube : pick command is not supported : see --help for more information');
+    async getMediaByPickList(criteria) {
+
+        let mediaList = [];
+
+        this.auth();
+
+        for (let identifierIndex = 0; identifierIndex < criteria.list.length; identifierIndex++) {
+            
+            const currentIdentifier = criteria.list[identifierIndex];
+
+            Log.info(`youtube : getting media pick video details : [ ${currentIdentifier.keyId} ]`);
+
+            let listResultsCompleted = false;
+        
+            while (!listResultsCompleted) {
+                try {
+
+                    const paramsVideos = {
+                        part: [
+                            'snippet',
+                            'contentDetails',
+                            'statistics'
+                        ],
+                        id: [ currentIdentifier.keyId ]
+                    };
+    
+                    const response = await this.youtube.videos.list(paramsVideos);
+
+                    if (response.status === 200) {
+
+                        let items = response.data.items;
+                        
+                        let themeMediaList = [];
+
+                        for (let index = 0; index < items.length; index++) {
+                    
+                            let detailInfo = this.parseDetail(items[index], index, "PICK", true, true);
+
+                            detailInfo.rank = this.calculateRank(detailInfo, undefined);
+                
+                            themeMediaList.push(detailInfo);
+                        }
+
+                        mediaList.push({
+                            theme: {
+                                id: currentIdentifier.themeId
+                            },
+                            youtube: this.selectBestRank(themeMediaList)
+                        });
+
+                    } else {
+                        Log.warn(`[ ${currentIdentifier.keyId} ] : ${response}`);
+                    }
+
+                    listResultsCompleted = true;
+
+                } catch (error) {
+                    Log.error(`[ ${currentIdentifier.keyId} ] : ${error.message}`);
+                    listResultsCompleted = !(await this.checkForQuota(error));
+                }
+            }
+            
+            await Common.sleep(criteria.delay);
+        }
+
+        Archive.save(mediaList, 'youtube_mediapick');
+
+        return mediaList;
+    }
+
+    async saveAnime(animes) {
+        Log.warn('youtube : seasons command is not supported : see --help for more information');
     }
 
     async savePersonal(animes) {
@@ -201,24 +274,33 @@ class YouTube {
         await this.database.saveMedias(medias);
     }
 
-    parseDetail(info, index) {
+    async saveAnimePick(animes) {
+        Log.warn('youtube : animepick command is not supported : see --help for more information');
+    }
+    
+    async saveMediaPick(medias) {
+        Log.info(`youtube : saving media pick : [ ${medias.length} entries ]`);
+        await this.database.saveMedias(medias);
+    }
+
+    parseDetail(info, index, searchType, isBestRank = false, isFinalChoice = false) {
         let item = {
-            youtube: {
-                keyId: info.id,
-                title: info.snippet.title,
-                description: info.snippet.description,
-                duration: info.contentDetails.duration,
-                durationSeconds: Common.convertISO8601ToSeconds(info.contentDetails.duration),
-                numberOfViews: info.statistics.viewCount,
-                numberOfLikes: info.statistics.likeCount,
-                isLicensed: info.contentDetails.licensedContent,
-                isFirstResult: index === 0,
-                isBestRank: false,
-                rank: 0,
-                address: `https://www.youtube.com/watch?v=${info.id}`
-            }
+            keyId: info.id,
+            title: info.snippet.title,
+            description: info.snippet.description,
+            duration: info.contentDetails.duration,
+            durationSeconds: Common.convertISO8601ToSeconds(info.contentDetails.duration),
+            numberOfViews: info.statistics.viewCount,
+            numberOfLikes: info.statistics.likeCount,
+            searchSequence: (index + 1),
+            isLicensed: info.contentDetails.licensedContent,
+            isBestRank: isBestRank,
+            isFinalChoice: isFinalChoice,
+            rank: 0,
+            searchType: searchType,
+            address: `https://www.youtube.com/watch?v=${info.id}`
         };
-        Log.trace(`youtube : parsed media entry : [ ${item.youtube.keyId}, ${item.youtube.title} ]`);
+        Log.trace(`youtube : parsed media entry : [ ${item.keyId}, ${item.title} ]`);
         return item;
     }
 
@@ -227,57 +309,59 @@ class YouTube {
         let lengthLowerThreshold = 120;
         let lengthUpperThreshold = 480;
 
-        let finalRank = detailInfo.youtube.rank;
+        let finalRank = detailInfo.rank;
 
         // overranks licensed videos 
-        if (detailInfo.youtube.licensed === true && 
-            detailInfo.youtube.durationSeconds >= lengthLowerThreshold && 
-            detailInfo.youtube.durationSeconds <= lengthUpperThreshold && 
-            detailInfo.youtube.views >= 100000) {
+        if (detailInfo.isLicensed === true && 
+            detailInfo.durationSeconds >= lengthLowerThreshold && 
+            detailInfo.durationSeconds <= lengthUpperThreshold && 
+            detailInfo.views >= 100000) {
             finalRank += 5;
         }
         
         // ranks videos over threshold and underanks short videos
-        if (detailInfo.youtube.durationSeconds >= lengthLowerThreshold && 
-            detailInfo.youtube.durationSeconds <= lengthUpperThreshold) {
+        if (detailInfo.durationSeconds >= lengthLowerThreshold && 
+            detailInfo.durationSeconds <= lengthUpperThreshold) {
             finalRank += 1;
         } else {
             finalRank -= 5;
         }
 
-        // ransks first video
-        if (detailInfo.youtube.first) {
-            finalRank += 1;
+        // ranks videos by sequence
+        if (detailInfo.searchSequence) {
+            finalRank += 6 - detailInfo.searchSequence;
         }
 
         // ranks videos over 100K views
-        if (detailInfo.youtube.views >= 100000) {
+        if (detailInfo.numberOfViews >= 100000) {
             finalRank += 1;
         }
 
         // ranks videos over 1K likes
-        if (detailInfo.youtube.likes >= 1000) {
+        if (detailInfo.numberOfLikes >= 1000) {
             finalRank += 1;
         }
 
         // ranks videos with artist / music on title or 
-        if (detailInfo.youtube.title.search(new RegExp(currentTheme.ThemeTitle, "i")) != -1 || 
-            detailInfo.youtube.title.search(new RegExp(currentTheme.ThemeArtist, "i")) != -1) {
-            finalRank += 1;
+        if (currentTheme) {
+            if (detailInfo.title.search(new RegExp(currentTheme.ThemeTitle, "i")) != -1 || 
+                detailInfo.title.search(new RegExp(currentTheme.ThemeArtist, "i")) != -1) {
+                finalRank += 1;
+            }
         }
 
         // down-ranks videos with TV on title / description
-        if (detailInfo.youtube.title.search(new RegExp("TV", "i")) != -1) {
+        if (detailInfo.title.search(new RegExp("TV", "i")) != -1) {
             finalRank -= 1;
         }
         
         // down-ranks videos with SHORT on title / description
-        if (detailInfo.youtube.title.search(new RegExp("SHORT", "i")) != -1) {
+        if (detailInfo.title.search(new RegExp("SHORT", "i")) != -1) {
             finalRank -= 1;
         }
 
-        // down-ranks videos with SHORT on title / description
-        if (detailInfo.youtube.title.search(new RegExp("COVER", "i")) != -1) {
+        // down-ranks videos with COVER on title / description
+        if (detailInfo.title.search(new RegExp("COVER", "i")) != -1) {
             finalRank -= 5;
         }
 
@@ -287,12 +371,12 @@ class YouTube {
     selectBestRank(mediaList) {
         if (mediaList) {
             mediaList.sort((first, second) => {
-                if (first.youtube.rank === second.youtube.rank) {
-                    return second.youtube.numberOfViews - first.youtube.numberOfViews;
+                if (first.rank === second.rank) {
+                    return second.numberOfViews - first.numberOfViews;
                 }
-                return second.youtube.rank - first.youtube.rank;
+                return second.rank - first.rank;
             })
-            mediaList[0].youtube.isBestRank = true;
+            mediaList[0].isBestRank = true;
         }
         return mediaList;
     }

@@ -484,7 +484,7 @@ class Database {
                 });
 
                 if (existingThemes === undefined) {
-                    throw new Error(`Source for [ ${currentAnimeMyAnimeList.id} ${currentAnimeMyAnimeList.title} ] not found.`);
+                    throw new Error(`source for [ ${currentAnimeMyAnimeList.id} ${currentAnimeMyAnimeList.title} ] not found.`);
                 }
 
                 if (existingThemes.Count > 0) {
@@ -543,47 +543,43 @@ class Database {
 
         await this.begin();
 
-        for (let mediaIndex = 0; mediaIndex < medias.length; mediaIndex++) {
+        for (let themeIndex = 0; themeIndex < medias.length; themeIndex++) {
 
-            const currentMediaYouTube = medias[mediaIndex].youtube;
-            const currentMediaTheme = medias[mediaIndex].theme;
+            const currentMediaTheme = medias[themeIndex].theme;
+            const currentMediaYoutubeList = medias[themeIndex].youtube;
 
             try {
 
-                const currentExists = await this.select({
-                    query: `SELECT Id FROM Media WHERE KeyId = ? AND ThemeId = ?`,
+                const currentThemeMediaExists = await this.select({
+                    query: `SELECT ThemeId, SUM(CASE IsFinalChoice WHEN 1 THEN 1 ELSE 0 END) FinalChoiceCount, SUM(CASE IsFinalChoice WHEN 0 THEN 1 ELSE 0 END) PendingChoiceCount FROM Media WHERE ThemeId = ?`,
                     params: [
-                        currentMediaYouTube.keyId,
                         currentMediaTheme.id
                     ]
                 });
 
-                if (currentExists) {
+                if (currentThemeMediaExists) {
+                    if (currentThemeMediaExists.FinalChoiceCount > 0) {
+                        let mustDelete = await Prompt.askConfirmation(`[${currentThemeMediaExists.FinalChoiceCount}] final choice medias were found for theme [${currentMediaTheme.id}]. delete previous data to proceed ?`);
+                        if (!mustDelete) {
+                            throw new Error(`final choice medias were found and delete was not accepted. no media changes will be done for theme [${currentMediaTheme.id}].`);
+                        }
+                    }
+                }
+
+                let cleanupResult = await this.exec({
+                    query: `DELETE FROM Media WHERE ThemeId = ? AND SearchType = 'SEARCH'`,
+                    params: [
+                        currentMediaTheme.id
+                    ]
+                });
+                execResults.deleted += cleanupResult.changes;
+
+                for (let mediaIndex = 0; mediaIndex < currentMediaYoutubeList.length; mediaIndex++) {
+
+                    const currentMediaYouTube = currentMediaYoutubeList[mediaIndex];
 
                     await this.exec({
-                        query: `UPDATE Media SET ThemeId = ?, KeyId = ?, Title = ?, Description = ?, Duration = ?, DurationSeconds = ?, NumberOfViews = ?, NumberOfLikes = ?, IsLicensed = ?, IsFirstResult = ?, IsBestRank = ?, Rank = ?, Address = ?, LastModifiedOn = ? WHERE Id = ?`,
-                        params: [
-                            currentMediaTheme.id,
-                            currentMediaYouTube.keyId,
-                            currentMediaYouTube.title,
-                            currentMediaYouTube.description,
-                            currentMediaYouTube.duration,
-                            currentMediaYouTube.durationSeconds,
-                            currentMediaYouTube.numberOfViews,
-                            currentMediaYouTube.numberOfLikes,
-                            currentMediaYouTube.isLicensed,
-                            currentMediaYouTube.isFirstResult,
-                            currentMediaYouTube.isBestRank,
-                            currentMediaYouTube.rank,
-                            currentMediaYouTube.address,
-                            Common.getMomentNowFormat(),
-                            currentMediaYouTube.id
-                        ]
-                    });
-                    execResults.updated++;
-                } else {
-                    await this.exec({
-                        query: `INSERT INTO Media (Id, ThemeId, KeyId, Title, Description, Duration, DurationSeconds, NumberOfViews, NumberOfLikes, IsLicensed, IsFirstResult, IsBestRank, IsDownloadReady, Rank, Address, CreatedOn, LastModifiedOn) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                        query: `INSERT INTO Media (Id, ThemeId, KeyId, Title, Description, Duration, DurationSeconds, NumberOfViews, NumberOfLikes, SearchSequence, IsLicensed, IsBestRank, IsFinalChoice, Rank, SearchType, Address, CreatedOn, LastModifiedOn) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                         params: [
                             currentMediaYouTube.id,
                             currentMediaTheme.id,
@@ -594,11 +590,12 @@ class Database {
                             currentMediaYouTube.durationSeconds,
                             currentMediaYouTube.numberOfViews,
                             currentMediaYouTube.numberOfLikes,
+                            currentMediaYouTube.searchSequence,
                             currentMediaYouTube.isLicensed,
-                            currentMediaYouTube.isFirstResult,
                             currentMediaYouTube.isBestRank,
-                            0,
+                            currentMediaYouTube.isFinalChoice,
                             currentMediaYouTube.rank,
+                            currentMediaYouTube.searchType,
                             currentMediaYouTube.address,
                             Common.getMomentNowFormat(),
                             Common.getMomentNowFormat()
@@ -607,7 +604,7 @@ class Database {
                     execResults.added++;
                 }
             } catch (error) {
-                Log.error(`database : error updating medias : [ ${currentMediaYouTube.keyId}, ${currentMediaYouTube.title} ]`);
+                Log.error(`database : error updating medias : [ ${currentMediaTheme.id} ]`);
                 Log.error(error.message);
                 Log.error(error.stack);
                 execResults.errors++;

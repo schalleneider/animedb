@@ -25,6 +25,10 @@ class Config {
         return Config.instance.config;
     }
 
+    static get logLevel() {
+        return Config.config.log.level;
+    }
+
     static get archiveEnable() {
         return Config.config.archive.enable;
     }
@@ -39,10 +43,6 @@ class Config {
 
     static get commandSeasons() {
         return Config.config.command.seasons;
-    }
-
-    static get commandPick() {
-        return Config.config.command.pick;
     }
     
     static get commandPersonal() {
@@ -59,6 +59,14 @@ class Config {
     
     static get commandMedias() {
         return Config.config.command.medias;
+    }
+
+    static get commandAnimePick() {
+        return Config.config.command.animepick;
+    }
+
+    static get commandMediaPick() {
+        return Config.config.command.mediapick;
     }
     
     static get myAnimeListAuth() {
@@ -79,6 +87,10 @@ class Config {
     
     static get youtubeAuth() {
         return Config.config.youtube.auth;
+    }
+
+    static get youtubeAutoReAuth() {
+        return Config.config.youtube.autoReAuth;
     }
 
     static parse(config) {

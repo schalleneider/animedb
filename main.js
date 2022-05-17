@@ -41,18 +41,6 @@ let argv = (yargs)(process.argv.slice(2))
         }
     })
     .command({
-        command: 'pick [options]',
-        desc: 'imports anime information based on a specific list of identifiers',
-        builder: (yargs) => { yargs
-            .options(commandOptions)
-            .demandOption(requiredOptions, "example: ./animedb.exe seasons --env=env --source='animedb'")
-        },
-        handler: async (argv) =>  {
-            await (new Program(argv.env).runPick(argv.source, argv.archive, argv.archivePath));
-            Log.info('main : seasons command completed...');
-        }
-    })
-    .command({
         command: 'personal [options]',
         desc: 'imports anime information based on a personal list',
         builder: (yargs) => { yargs
@@ -98,6 +86,30 @@ let argv = (yargs)(process.argv.slice(2))
         handler: async (argv) => {
             await (new Program(argv.env).runMedias(argv.source, argv.archive, argv.archivePath));
             Log.info('main : media command completed...');
+        }
+    })
+    .command({
+        command: 'animepick [options]',
+        desc: 'imports anime information based on a specific list of identifiers',
+        builder: (yargs) => { yargs
+            .options(commandOptions)
+            .demandOption(requiredOptions, "example: ./animedb.exe animepick --env=env --source='animedb'")
+        },
+        handler: async (argv) =>  {
+            await (new Program(argv.env).runAnimePick(argv.source, argv.archive, argv.archivePath));
+            Log.info('main : animepick command completed...');
+        }
+    })
+    .command({
+        command: 'mediapick [options]',
+        desc: 'imports media information based on a specific list of youtube videos',
+        builder: (yargs) => { yargs
+            .options(commandOptions)
+            .demandOption(requiredOptions, "example: ./animedb.exe mediapick --env=env --source='animedb'")
+        },
+        handler: async (argv) =>  {
+            await (new Program(argv.env).runMediaPick(argv.source, argv.archive, argv.archivePath));
+            Log.info('main : mediapick command completed...');
         }
     })
     .demandCommand()

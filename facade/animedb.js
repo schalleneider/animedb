@@ -11,60 +11,72 @@ class AnimeDB {
         this.database = database;
         this.aniListFacade = new AniList(this.database);
         this.myAnimeListFacade = new MyAnimeList(this.database);
+        this.youtubeFacade = new YouTube(this.database);
     }
 
     async getAnimeBySeasons(criteria) {
-        Log.warn('anilist : seasons command is not supported : see --help for more information');
+        Log.warn('animedb : seasons command is not supported : see --help for more information');
+    }
+
+    async getAnimeByPersonalList(criteria) {
+        Log.warn('animedb : personal command is not supported : see --help for more information');
+    }
+
+    async getAnimeByScout(config) {
+        Log.warn('animedb : scout command is not supported : see --help for more information');
+    }
+
+    async getAnimeThemes(config) {
+        Log.warn('animedb : themes command is not supported : see --help for more information');
+    }
+    
+    async getMedias(config) {
+        Log.warn('animedb : medias command is not supported : see --help for more information');
     }
 
     async getAnimeByPickList(criteria) {
         let aniListAnimes = await this.aniListFacade.getAnimeByPickList(criteria);
         let myAnimeListAnimes = await this.myAnimeListFacade.getAnimeByPickList(criteria);
         let animes = this.mergeAnimeList(criteria, aniListAnimes, myAnimeListAnimes);
-        Archive.save(animes, 'animedb_pick');
+        Archive.save(animes, 'animedb_animepick');
         return animes
     }
-
-    async getAnimeByPersonalList(criteria) {
-        Log.warn('anilist : personal command is not supported : see --help for more information');
-    }
-
-    async getAnimeByScout(config) {
-        Log.warn('anilist : scout command is not supported : see --help for more information');
-    }
-
-    async getAnimeThemes(config) {
-        Log.warn('anilist : themes command is not supported : see --help for more information');
-    }
     
-    async getMedias(config) {
-        Log.warn('anilist : medias command is not supported : see --help for more information');
+    async getMediaByPickList(criteria) {
+        let medias = await this.youtubeFacade.getMediaByPickList(criteria);
+        Archive.save(medias, 'animedb_mediapick');
+        return medias
     }
 
     async saveAnime(animes) {
-        Log.warn('youtube : seasons command is not supported : see --help for more information');
-    }
-
-    async savePick(animes) {
-        Log.info(`anilist : saving personal anime : [ ${animes.length} entries ]`);
-        await this.aniListFacade.savePick(animes);
-        await this.myAnimeListFacade.savePick(animes);
+        Log.warn('animedb : seasons command is not supported : see --help for more information');
     }
     
     async savePersonal(animes) {
-        Log.warn('youtube : personal command is not supported : see --help for more information');
+        Log.warn('animedb : personal command is not supported : see --help for more information');
     }
 
     async saveScout(animes) {
-        Log.warn('anilist : scout command is not supported : see --help for more information');
+        Log.warn('animedb : scout command is not supported : see --help for more information');
     }
     
     async saveThemes(animes) {
-        Log.warn('anilist : themes command is not supported : see --help for more information');
+        Log.warn('animedb : themes command is not supported : see --help for more information');
     }
 
     async saveMedias(medias) {
-        Log.warn('anilist : medias command is not supported : see --help for more information');
+        Log.warn('animedb : medias command is not supported : see --help for more information');
+    }
+
+    async saveAnimePick(animes) {
+        Log.info(`animedb : saving anime pick : [ ${animes.length} entries ]`);
+        await this.aniListFacade.saveAnimePick(animes);
+        await this.myAnimeListFacade.saveAnimePick(animes);
+    }
+    
+    async saveMediaPick(medias) {
+        Log.info(`animedb : saving media pick : [ ${medias.length} entries ]`);
+        await this.youtubeFacade.saveMediaPick(medias);
     }
 
     mergeAnimeList(criteria, aniListAnimes, myAnimeListAnimes) {

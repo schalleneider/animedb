@@ -63,36 +63,6 @@ class Program {
             Log.fatal(error.stack);
         }
     }
-
-    async runPick(source, fromArchive = false, archivePath) {
-        try {
-            Log.info(`program : pick command : [ ${source}, ${Config.configFile} ]`);
-
-            await this.database.init();
-
-            let facade = this.buildFacade('animedb');
-            let animes = [];
-
-            if (fromArchive) {
-                animes = Archive.load(archivePath)
-            } else {
-                animes = await facade.getAnimeByPickList(Config.commandPick);
-            }
-            
-            if (animes && animes.length > 0) {
-                await facade.savePick(animes);
-            } else {
-                Log.warn(`program : pick command : no data to save : [ ${source}, ${Config.configFile} ]`);
-            }
-            
-        } catch (error) {
-            if (error.isAxiosError) {
-                Log.fatal(error.response.data.errors);
-            }
-            Log.fatal(error.message);
-            Log.fatal(error.stack);
-        }
-    }
     
     async runPersonal(source, fromArchive = false, archivePath) {
         try {
@@ -203,6 +173,66 @@ class Program {
                 await facade.saveMedias(medias);
             } else {
                 Log.warn(`program : medias command : no data to save : [ ${source}, ${Config.configFile} ]`);
+            }
+            
+        } catch (error) {
+            if (error.isAxiosError) {
+                Log.fatal(error.response.data.errors);
+            }
+            Log.fatal(error.message);
+            Log.fatal(error.stack);
+        }
+    }
+
+    async runAnimePick(source, fromArchive = false, archivePath) {
+        try {
+            Log.info(`program : animepick command : [ ${source}, ${Config.configFile} ]`);
+
+            await this.database.init();
+
+            let facade = this.buildFacade('animedb');
+            let animes = [];
+
+            if (fromArchive) {
+                animes = Archive.load(archivePath)
+            } else {
+                animes = await facade.getAnimeByPickList(Config.commandAnimePick);
+            }
+            
+            if (animes && animes.length > 0) {
+                await facade.saveAnimePick(animes);
+            } else {
+                Log.warn(`program : animepick command : no data to save : [ ${source}, ${Config.configFile} ]`);
+            }
+            
+        } catch (error) {
+            if (error.isAxiosError) {
+                Log.fatal(error.response.data.errors);
+            }
+            Log.fatal(error.message);
+            Log.fatal(error.stack);
+        }
+    }
+
+    async runMediaPick(source, fromArchive = false, archivePath) {
+        try {
+            Log.info(`program : mediapick command : [ ${source}, ${Config.configFile} ]`);
+
+            await this.database.init();
+
+            let facade = this.buildFacade('animedb');
+            let medias = [];
+
+            if (fromArchive) {
+                medias = Archive.load(archivePath)
+            } else {
+                medias = await facade.getMediaByPickList(Config.commandMediaPick);
+            }
+            
+            if (medias && medias.length > 0) {
+                await facade.saveMediaPick(medias);
+            } else {
+                Log.warn(`program : mediapick command : no data to save : [ ${source}, ${Config.configFile} ]`);
             }
             
         } catch (error) {
