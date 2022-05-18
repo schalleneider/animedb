@@ -11,7 +11,7 @@ let commandOptions = {
     },
     'source' : {
         type : 'string',
-        desc: 'where the information will be retrieved. available options: [ anilist, myanimelist, youtube ]'
+        desc: 'where the information will be retrieved. available options: [ anilist, myanimelist, youtube, animedb ]'
     },
     'archive' : {
         type : 'boolean',
@@ -30,7 +30,7 @@ let argv = (yargs)(process.argv.slice(2))
     .usage('usage: ./animedb.exe <command> [options]')
     .command({
         command: 'seasons [options]',
-        desc: 'imports anime information based on a season list',
+        desc: 'use to get anime information from a season list',
         builder: (yargs) => { yargs
             .options(commandOptions)
             .demandOption(requiredOptions, "example: ./animedb.exe seasons --env=env --source='anilist|myanimelist'")
@@ -42,7 +42,7 @@ let argv = (yargs)(process.argv.slice(2))
     })
     .command({
         command: 'personal [options]',
-        desc: 'imports anime information based on a personal list',
+        desc: 'use to get anime information from a personal list',
         builder: (yargs) => { yargs
             .options(commandOptions)
             .demandOption(requiredOptions, "example: ./animedb.exe personal --env=env --source='anilist'")
@@ -54,7 +54,7 @@ let argv = (yargs)(process.argv.slice(2))
     })
     .command({
         command: 'scout [options]',
-        desc: 'scout anime information on myanimelist based on anilist entries',
+        desc: 'use to scout anime information on myanimelist from anilist entries',
         builder: (yargs) => { yargs
             .options(commandOptions)
             .demandOption(requiredOptions, "example: ./animedb.exe scout --env=env --source='myanimelist'")
@@ -66,7 +66,7 @@ let argv = (yargs)(process.argv.slice(2))
     })
     .command({
         command: 'themes [options]',
-        desc: 'imports opening and ending themes from myanimelist',
+        desc: 'use to get opening and ending themes from myanimelist',
         builder: (yargs) => { yargs
             .options(commandOptions)
             .demandOption(requiredOptions, "example: ./animedb.exe themes --env=env --source='myanimelist'")
@@ -78,7 +78,7 @@ let argv = (yargs)(process.argv.slice(2))
     })
     .command({
         command: 'medias [options]',
-        desc: 'imports media information for themes from youtube',
+        desc: 'use to get themes media information from youtube',
         builder: (yargs) => { yargs
             .options(commandOptions)
             .demandOption(requiredOptions, "example: ./animedb.exe medias --env=env --source='youtube'")
@@ -90,7 +90,7 @@ let argv = (yargs)(process.argv.slice(2))
     })
     .command({
         command: 'animepick [options]',
-        desc: 'imports anime information based on a specific list of identifiers',
+        desc: 'use to get anime information from a manual list of identifiers',
         builder: (yargs) => { yargs
             .options(commandOptions)
             .demandOption(requiredOptions, "example: ./animedb.exe animepick --env=env --source='animedb'")
@@ -102,7 +102,7 @@ let argv = (yargs)(process.argv.slice(2))
     })
     .command({
         command: 'mediapick [options]',
-        desc: 'imports media information based on a specific list of youtube videos',
+        desc: 'use to get media information from a manual list of youtube videos',
         builder: (yargs) => { yargs
             .options(commandOptions)
             .demandOption(requiredOptions, "example: ./animedb.exe mediapick --env=env --source='animedb'")
