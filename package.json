@@ -1,6 +1,6 @@
 {
   "name": "animedb",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "animedb",
   "type": "module",
   "exports": "./main.js",
@@ -38,8 +38,8 @@
     "redo:scout:myanimelist": "./animedb.exe scout --env=live --source='myanimelist' --archive --archivePath='archive/myanimelist_scout.json'",
     "redo:themes:myanimelist": "./animedb.exe themes --env=live --source='myanimelist' --archive --archivePath='archive/myanimelist_themes.json'",
     "redo:medias:youtube": "./animedb.exe medias --env=live --source='youtube' --archive --archivePath='archive/youtube_medias.json'",
-    "redo:animepick:animedb": "./animedb.exe animepick --env=live --source='animedb' --archive --archivePath='archive/animedb_pick.json'",
-    "redo:mediapick:animedb": "./animedb.exe mediapick --env=live --source='animedb' --archive --archivePath='archive/animedb_pick.json'"
+    "redo:animepick:animedb": "./animedb.exe animepick --env=live --source='animedb' --archive --archivePath='archive/animedb_animepick.json'",
+    "redo:mediapick:animedb": "./animedb.exe mediapick --env=live --source='animedb' --archive --archivePath='archive/animedb_mediapick.json'"
   },
   "author": "wschneider",
   "license": "ISC",

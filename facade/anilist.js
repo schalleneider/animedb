@@ -1,14 +1,16 @@
 import axios from 'axios';
 import axiosRetry from 'axios-retry';
 
+import { Facade } from './facade.js';
+
 import { Log } from '../log.js';
 import { Common } from '../common.js';
 import { Archive } from '../archive.js';
 
-class AniList {
+class AniList extends Facade {
 
     constructor(database) {
-        this.database = database;
+        super(database);
     }
 
     async getAnimeBySeasons(criteria) {
@@ -191,18 +193,6 @@ class AniList {
         return animeList;
     }
 
-    async getAnimeByScout(config) {
-        Log.warn('anilist : scout command is not supported : see --help for more information');
-    }
-
-    async getAnimeThemes(config) {
-        Log.warn('anilist : themes command is not supported : see --help for more information');
-    }
-    
-    async getMedias(config) {
-        Log.warn('anilist : medias command is not supported : see --help for more information');
-    }
-
     async getAnimeByPickList(criteria) {
         
         let animeList = [];
@@ -277,10 +267,6 @@ class AniList {
         return animeList;
     }
 
-    async getMediaByPickList(criteria) {
-        Log.warn('anilist : mediapick command is not supported : see --help for more information');
-    }
-
     async saveAnime(animes) {
         Log.info(`anilist : saving anime : [ ${animes.length} entries ]`);
         await this.database.saveAniList(animes);
@@ -292,25 +278,9 @@ class AniList {
         await this.database.savePersonal(animes);
     }
 
-    async saveScout(animes) {
-        Log.warn('anilist : scout command is not supported : see --help for more information');
-    }
-    
-    async saveThemes(animes) {
-        Log.warn('anilist : themes command is not supported : see --help for more information');
-    }
-
-    async saveMedias(medias) {
-        Log.warn('anilist : medias command is not supported : see --help for more information');
-    }
-
     async saveAnimePick(animes) {
         Log.info(`anilist : saving anime pick : [ ${animes.length} entries ]`);
         await this.database.saveAniList(animes);
-    }
-    
-    async saveMediaPick(animes) {
-        Log.warn('anilist : mediapick command is not supported : see --help for more information');
     }
 
     parseAnimeMedia(media) {

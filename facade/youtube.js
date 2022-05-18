@@ -1,67 +1,21 @@
 import { google } from 'googleapis';
 
+import { Facade } from './facade.js';
+
 import { Log } from '../log.js';
 import { Config } from '../config.js';
 import { Common } from '../common.js';
 import { Prompt } from '../prompt.js';
 import { Archive } from '../archive.js';
 
-class YouTube {
+class YouTube extends Facade {
 
     constructor(database) {
-        this.database = database;
+        super(database);
         this.youtube = google.youtube('v3');
         this.autoReAuth = Config.youtubeAutoReAuth;
         this.keyFilePool = Config.youtubeAuth;
         this.keyFilePoolIndex = 0;
-    }
-
-    async auth() {
-        const auth = new google.auth.GoogleAuth({
-            keyFile: this.keyFilePool[this.keyFilePoolIndex],
-            scopes: [
-                'https://www.googleapis.com/auth/cloud-platform',
-                'https://www.googleapis.com/auth/youtube'
-            ],
-        });
-        google.options({ auth });
-        Log.debug(`youtube : currently authenticated with key file [ ${this.keyFilePool[this.keyFilePoolIndex]} ]`);
-        this.keyFilePoolIndex++;
-    }
-
-    async checkForQuota(error) {
-        // quota exeeded
-        if (error.code === 403 && error?.errors[0]?.reason === "quotaExceeded") {
-            if (this.keyFilePoolIndex < this.keyFilePool.length) {
-                let manualReAuth = false;
-                if (!this.autoReAuth) {
-                    manualReAuth = await Prompt.askConfirmation(`[ quotaExeeded ] response received. proceed with the reauthentication with the next key ?`);
-                }
-                if (this.autoReAuth || manualReAuth) {
-                    this.auth();
-                }
-                return true;
-            } else {
-                Log.error('no more keys are available in the pool for reauthentication.');
-            }
-        }
-        return false;
-    }
-
-    async getAnimeBySeasons(config) {
-        Log.warn('youtube : seasons command is not supported : see --help for more information');
-    }
-
-    async getAnimeByPersonalList(config) {
-        Log.warn('youtube : personal command is not supported : see --help for more information');
-    }
-    
-    async getAnimeByScout(config) {
-        Log.warn('youtube : scout command is not supported : see --help for more information');
-    }
-
-    async getAnimeThemes(config) {
-        Log.warn('youtube : themes command is not supported : see --help for more information');
     }
 
     async getMedias(criteria) {
@@ -178,10 +132,6 @@ class YouTube {
 
         return mediaList;
     }
-
-    async getAnimeByPickList(criteria) {
-        Log.warn('youtube : animepick command is not supported : see --help for more information');
-    }
     
     async getMediaByPickList(criteria) {
 
@@ -253,34 +203,46 @@ class YouTube {
         return mediaList;
     }
 
-    async saveAnime(animes) {
-        Log.warn('youtube : seasons command is not supported : see --help for more information');
-    }
-
-    async savePersonal(animes) {
-        Log.warn('youtube : personal command is not supported : see --help for more information');
-    }
-
-    async saveScout(animes) {
-        Log.warn('youtube : scout command is not supported : see --help for more information');
-    }
-
-    async saveThemes(animes) {
-        Log.warn('youtube : themes command is not supported : see --help for more information');
-    }
-
     async saveMedias(medias) {
         Log.info(`youtube : saving medias : [ ${medias.length} entries ]`);
         await this.database.saveMedias(medias);
-    }
-
-    async saveAnimePick(animes) {
-        Log.warn('youtube : animepick command is not supported : see --help for more information');
     }
     
     async saveMediaPick(medias) {
         Log.info(`youtube : saving media pick : [ ${medias.length} entries ]`);
         await this.database.saveMedias(medias);
+    }
+
+    async auth() {
+        const auth = new google.auth.GoogleAuth({
+            keyFile: this.keyFilePool[this.keyFilePoolIndex],
+            scopes: [
+                'https://www.googleapis.com/auth/cloud-platform',
+                'https://www.googleapis.com/auth/youtube'
+            ],
+        });
+        google.options({ auth });
+        Log.debug(`youtube : currently authenticated with key file [ ${this.keyFilePool[this.keyFilePoolIndex]} ]`);
+        this.keyFilePoolIndex++;
+    }
+
+    async checkForQuota(error) {
+        // quota exeeded
+        if (error.code === 403 && error?.errors[0]?.reason === "quotaExceeded") {
+            if (this.keyFilePoolIndex < this.keyFilePool.length) {
+                let manualReAuth = false;
+                if (!this.autoReAuth) {
+                    manualReAuth = await Prompt.askConfirmation(`[ quotaExeeded ] response received. proceed with the reauthentication with the next key ?`);
+                }
+                if (this.autoReAuth || manualReAuth) {
+                    this.auth();
+                }
+                return true;
+            } else {
+                Log.error('no more keys are available in the pool for reauthentication.');
+            }
+        }
+        return false;
     }
 
     parseDetail(info, index, searchType, isBestRank = false, isFinalChoice = false) {

@@ -1,37 +1,19 @@
-import { Log } from '../log.js';
-import { Archive } from '../archive.js';
+import { Facade } from './facade.js';
 
 import { AniList } from './anilist.js';
 import { MyAnimeList } from './myanimelist.js';
 import { YouTube } from './youtube.js';
 
-class AnimeDB {
+import { Log } from '../log.js';
+import { Archive } from '../archive.js';
+
+class AnimeDB extends Facade {
 
     constructor(database) {
-        this.database = database;
+        super(database);
         this.aniListFacade = new AniList(this.database);
         this.myAnimeListFacade = new MyAnimeList(this.database);
         this.youtubeFacade = new YouTube(this.database);
-    }
-
-    async getAnimeBySeasons(criteria) {
-        Log.warn('animedb : seasons command is not supported : see --help for more information');
-    }
-
-    async getAnimeByPersonalList(criteria) {
-        Log.warn('animedb : personal command is not supported : see --help for more information');
-    }
-
-    async getAnimeByScout(config) {
-        Log.warn('animedb : scout command is not supported : see --help for more information');
-    }
-
-    async getAnimeThemes(config) {
-        Log.warn('animedb : themes command is not supported : see --help for more information');
-    }
-    
-    async getMedias(config) {
-        Log.warn('animedb : medias command is not supported : see --help for more information');
     }
 
     async getAnimeByPickList(criteria) {
@@ -46,26 +28,6 @@ class AnimeDB {
         let medias = await this.youtubeFacade.getMediaByPickList(criteria);
         Archive.save(medias, 'animedb_mediapick');
         return medias
-    }
-
-    async saveAnime(animes) {
-        Log.warn('animedb : seasons command is not supported : see --help for more information');
-    }
-    
-    async savePersonal(animes) {
-        Log.warn('animedb : personal command is not supported : see --help for more information');
-    }
-
-    async saveScout(animes) {
-        Log.warn('animedb : scout command is not supported : see --help for more information');
-    }
-    
-    async saveThemes(animes) {
-        Log.warn('animedb : themes command is not supported : see --help for more information');
-    }
-
-    async saveMedias(medias) {
-        Log.warn('animedb : medias command is not supported : see --help for more information');
     }
 
     async saveAnimePick(animes) {

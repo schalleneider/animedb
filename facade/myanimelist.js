@@ -2,15 +2,17 @@ import fs from 'fs';
 import axios from 'axios';
 import axiosRetry from 'axios-retry';
 
+import { Facade } from './facade.js';
+
 import { Log } from '../log.js';
 import { Config } from '../config.js';
 import { Common } from '../common.js';
 import { Archive } from '../archive.js';
 
-class MyAnimeList {
+class MyAnimeList extends Facade {
 
     constructor(database) {
-        this.database = database;
+        super(database);
         this.auth = Config.parsedMyAnimeListAuth();
     }
 
@@ -71,10 +73,6 @@ class MyAnimeList {
         Archive.save(animeList, 'myanimelist_seasons');
 
         return animeList;
-    }
-
-    async getAnimeByPersonalList(config) {
-        Log.warn('myanimelist : personal command is not supported : see --help for more information');
     }
     
     async getAnimeByScout(criteria) {
@@ -193,10 +191,6 @@ class MyAnimeList {
 
         return animeList;
     }
-    
-    async getMedias(config) {
-        Log.warn('myanimelist : medias command is not supported : see --help for more information');
-    }
 
     async getAnimeByPickList(criteria) {
         
@@ -251,17 +245,9 @@ class MyAnimeList {
         return animeList;
     }
     
-    async getMediaByPickList(criteria) {
-        Log.warn('myanimelist : mediapick command is not supported : see --help for more information');
-    }
-    
     async saveAnime(animes) {
         Log.info(`myanimelist : saving anime : [ ${animes.length} entries ]`);
         await this.database.saveMyAnimeList(animes);
-    }
-
-    async savePersonal(animes) {
-        Log.warn('myanimelist : personal command is not supported : see --help for more information');
     }
 
     async saveScout(animes) {
@@ -275,19 +261,11 @@ class MyAnimeList {
         await this.database.saveMyAnimeList(animes);
         await this.database.saveThemes(animes);
     }
-
-    async saveMedias(medias) {
-        Log.warn('myanimelist : medias command is not supported : see --help for more information');
-    }
     
     async saveAnimePick(animes) {
         Log.info(`myanimelist : saving anime pick : [ ${animes.length} entries ]`);
         await this.database.saveMyAnimeList(animes);
         await this.database.saveScout(animes);
-    }
-    
-    async saveMediaPick(animes) {
-        Log.warn('myanimelist : mediapick command is not supported : see --help for more information');
     }
 
     parseAnimeNode(node) {
