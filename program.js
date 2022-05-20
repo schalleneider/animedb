@@ -184,6 +184,60 @@ class Program {
         }
     }
 
+    async runBatch(source, fromArchive = false, archivePath) {
+        try {
+            Log.info(`program : batch command : [ ${source}, ${Config.configFile} ]`);
+
+            await this.database.init();
+
+            let facade = this.buildFacade(source);
+            let batch = [];
+
+            if (fromArchive) {
+                batch = Archive.load(archivePath)
+            } else {
+                batch = await facade.getBatch(Config.commandBatch);
+            }
+            
+            if (batch && batch.length > 0) {
+                await facade.saveBatch(batch);
+            } else {
+                Log.warn(`program : batch command : no data to save : [ ${source}, ${Config.configFile} ]`);
+            }
+            
+        } catch (error) {
+            if (error.isAxiosError) {
+                Log.fatal(error.response.data.errors);
+            }
+            Log.fatal(error.message);
+            Log.fatal(error.stack);
+        }
+    }
+
+    async runDownload(source, fromArchive = false, archivePath) {
+        try {
+            Log.info(`program : download command : [ ${source}, ${Config.configFile} ]`);
+
+            await this.database.init();
+
+            let facade = this.buildFacade(source);
+            let medias = [];
+
+            if (fromArchive) {
+                throw Error(`program : redo from archive is not available for download command`);
+            } 
+            
+            // download
+            
+        } catch (error) {
+            if (error.isAxiosError) {
+                Log.fatal(error.response.data.errors);
+            }
+            Log.fatal(error.message);
+            Log.fatal(error.stack);
+        }
+    }
+
     async runAnimePick(source, fromArchive = false, archivePath) {
         try {
             Log.info(`program : animepick command : [ ${source}, ${Config.configFile} ]`);

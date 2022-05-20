@@ -60,6 +60,10 @@ class Config {
     static get commandMedias() {
         return Config.config.command.medias;
     }
+    
+    static get commandBatch() {
+        return Config.config.command.batch;
+    }
 
     static get commandAnimePick() {
         return Config.config.command.animepick;

@@ -100,6 +100,26 @@ class Database {
         return [];
     }
 
+    async getMedias(criteria) {
+        try {
+
+            const result = await this.selectAll({
+                query: `${criteria.base} ${criteria.criteria} ${criteria.limit}`
+            });
+
+            if (result.length > 0) {
+                return result;
+            }
+
+        } catch (error) {
+            Log.error(`database : error retrieving medias : [ ${criteria} ]`);
+            Log.error(error.message);
+            Log.error(error.stack);
+        }
+
+        return [];
+    }
+
     async createSource(externalId, sourceType) {
 
         let currentSourceType = await this.select({
@@ -567,7 +587,7 @@ class Database {
                 }
 
                 let cleanupResult = await this.exec({
-                    query: `DELETE FROM Media WHERE ThemeId = ? AND SearchType = 'SEARCH'`,
+                    query: `DELETE FROM Media WHERE ThemeId = ?`,
                     params: [
                         currentMediaTheme.id
                     ]
@@ -579,9 +599,8 @@ class Database {
                     const currentMediaYouTube = currentMediaYoutubeList[mediaIndex];
 
                     await this.exec({
-                        query: `INSERT INTO Media (Id, ThemeId, KeyId, Title, Description, Duration, DurationSeconds, NumberOfViews, NumberOfLikes, SearchSequence, IsLicensed, IsBestRank, IsFinalChoice, Rank, SearchType, Address, CreatedOn, LastModifiedOn) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                        query: `INSERT INTO Media (Id, ThemeId, KeyId, Title, Description, Duration, DurationSeconds, NumberOfViews, NumberOfLikes, SearchSequence, IsLicensed, IsBestRank, IsFinalChoice, Rank, SearchType, Address, CreatedOn, LastModifiedOn) VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                         params: [
-                            currentMediaYouTube.id,
                             currentMediaTheme.id,
                             currentMediaYouTube.keyId,
                             currentMediaYouTube.title,
@@ -614,6 +633,48 @@ class Database {
         await this.commit();
 
         Log.info(`database : medias updated : [ added: ${execResults.added}, updated: ${execResults.updated}, deleted: ${execResults.deleted}, errors: ${execResults.errors} ]`);
+    }
+
+    async saveBatch(batch) {
+
+        let execResults = { added: 0, updated: 0, deleted: 0, errors: 0 };
+
+        await this.begin();
+
+        for (let batchIndex = 0; batchIndex < batch.length; batchIndex++) {
+
+            const currentDownloadMedia = batch[batchIndex].media;
+            const currentDownload = batch[batchIndex].download;
+
+            try {
+                
+                await this.exec({
+                    query: `INSERT INTO Download (Id, KeyId, Address, Artist, Title, Album, Path, Status, CreatedOn, LastModifiedOn) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                    params: [
+                        currentDownload.id,
+                        currentDownloadMedia.id,
+                        currentDownload.address,
+                        currentDownload.artist,
+                        currentDownload.title,
+                        currentDownload.album,
+                        currentDownload.path,
+                        currentDownload.status,
+                        Common.getMomentNowFormat(),
+                        Common.getMomentNowFormat()
+                    ]
+                });
+                execResults.added++;
+            } catch (error) {
+                Log.error(`database : error updating download : [ ${currentDownloadMedia.id} ]`);
+                Log.error(error.message);
+                Log.error(error.stack);
+                execResults.errors++;
+            }
+        }
+
+        await this.commit();
+
+        Log.info(`database : download updated : [ added: ${execResults.added}, updated: ${execResults.updated}, deleted: ${execResults.deleted}, errors: ${execResults.errors} ]`);
     }
 }
 

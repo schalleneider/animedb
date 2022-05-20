@@ -127,6 +127,25 @@ class Common {
         }
         return artist.trim();
     }
+
+    static parseThemeType(themeType) {
+        switch (themeType) {
+            case 'OPENING':
+                return 'OP';
+            case 'ENDING':
+                return 'ED';
+            default:
+                return 'THEME';
+        }
+    }
+
+    static parseDownloadAlbum(media) {
+        return `${media.AniListTitle} - ${Common.parseThemeType(media.ThemeType)} ${media.ThemeSequence}`;
+    }
+    
+    static parseDownloadPath(download) {
+        return `'${String(download.download.id).padStart(4, '0')}'_'${download.download.artist}'_'${download.download.title}'_'${download.download.album}'.mp3`;
+    }
 }
 
 export { Common }

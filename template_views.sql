@@ -3,18 +3,20 @@
 DROP VIEW v_AniListToScout;
 DROP VIEW v_ThemesToSearch;
 DROP VIEW v_MediasToSearch;
+DROP VIEW v_MediasToBatch;
 DROP VIEW v_MyAnimeListScoutMismatch;
 DROP VIEW v_ThemesInError;
 DROP VIEW v_PersonalList;
 DROP VIEW v_AniList;
 DROP VIEW v_MyAnimeList;
 DROP VIEW v_Themes;
+DROP VIEW v_Medias;
 
 -- VIEWS
 
 CREATE VIEW v_AniListToScout
 AS
-	SELECT
+    SELECT
         AniList.Id AniListId,
         AniList.Title AniListTitle,
         AniList.Type AniListType,
@@ -26,15 +28,15 @@ AS
         AniList.Status AniListStatus,
         Personal.Status PersonalStatus,
         User.Name UserName
-	FROM AniList
-	INNER JOIN Personal ON Personal.AniListId = AniList.Id
-	INNER JOIN User ON User.Id = Personal.UserId
-	WHERE 
-		AniList.Id NOT IN (
-			SELECT DISTINCT 
-				AniList_MyAnimeList.AniListId 
-			FROM AniList_MyAnimeList
-		);
+    FROM AniList
+    INNER JOIN Personal ON Personal.AniListId = AniList.Id
+    INNER JOIN User ON User.Id = Personal.UserId
+    WHERE 
+        AniList.Id NOT IN (
+            SELECT DISTINCT 
+                AniList_MyAnimeList.AniListId 
+            FROM AniList_MyAnimeList
+        );
 
 CREATE VIEW v_ThemesToSearch
 AS
@@ -85,7 +87,7 @@ AS
         Theme.Type ThemeType,
         Theme.Sequence ThemeSequence,
         Theme.Algorithm ThemeAlgorithm,
-	    MyAnimeList.Id MyAnimeListId,
+        MyAnimeList.Id MyAnimeListId,
         MyAnimeList.Title MyAnimeListTitle,
         MyAnimeList.Type MyAnimeListType,
         MyAnimeList.Season MyAnimeListSeason,
@@ -120,6 +122,84 @@ AS
                 Media.ThemeId 
             FROM Media
         );
+
+CREATE VIEW v_MediasToBatch
+AS
+    SELECT
+        Media.Id MediaId,
+        Media.ThemeId MediaThemeId,
+        Media.KeyId MediaKeyId,
+        Media.Title MediaTitle,
+        Media.Duration MediaDuration,
+        Media.DurationSeconds MediaDurationSeconds,
+        Media.NumberOfViews MediaNumberOfViews,
+        Media.NumberOfLikes MediaNumberOfLikes,
+        Media.SearchSequence MediaSearchSequence,
+        Media.IsLicensed MediaIsLicensed,
+        Media.IsBestRank MediaIsBestRank,
+        Media.IsFinalChoice MediaIsFinalChoice,
+        Media.Rank MediaRank,
+        Media.SearchType MediaSearchType,
+        Media.Address MediaAddress,
+        Media.CreatedOn MediaCreatedOn,
+        Media.LastModifiedOn MediaLastModifiedOn,
+        Theme.Id ThemeId,
+        Theme.KeyId ThemeKeyId,
+        Theme.Theme ThemeTheme,
+        Theme.Artist ThemeArtist,
+        Theme.Title ThemeTitle,
+        Theme.Type ThemeType,
+        Theme.Sequence ThemeSequence,
+        Theme.Algorithm ThemeAlgorithm,
+        Theme.CreatedOn ThemeCreatedOn,
+        MyAnimeList.Id MyAnimeListId,
+        MyAnimeList.Title MyAnimeListTitle,
+        MyAnimeList.Type MyAnimeListType,
+        MyAnimeList.Season MyAnimeListSeason,
+        MyAnimeList.SeasonYear MyAnimeListSeasonYear,
+        MyAnimeList.NumberOfEpisodes MyAnimeListNumberOfEpisodes,
+        MyAnimeList.StartDate MyAnimeListStartDate,
+        MyAnimeList.EndDate MyAnimeListEndDate,
+        MyAnimeList.Status MyAnimeListStatus,
+        MyAnimeList.CreatedOn MyAnimeListCreatedOn,
+        MyAnimeList.LastModifiedOn MyAnimeListLastModifiedOn,
+        AniList.Id AniListId,
+        AniList.Title AniListTitle,
+        AniList.Type AniListType,
+        AniList.Format AniListFormat,
+        AniList.Season AniListSeason,
+        AniList.SeasonYear AniListSeasonYear,
+        AniList.Genres AniListGenres,
+        AniList.NumberOfEpisodes AniListNumberOfEpisodes,
+        AniList.StartDate AniListStartDate,
+        AniList.StartWeekNumber AniListStartWeekNumber,
+        AniList.StartDayOfWeek AniListStartDayOfWeek,
+        AniList.HasPrequel AniListHasPrequel,
+        AniList.HasSequel AniListHasSequel,
+        AniList.Status AniListStatus,
+        AniList.Address AniListAddress,
+        AniList.CreatedOn AniListCreatedOn,
+        AniList.LastModifiedOn AniListLastModifiedOn,
+        Personal.Status PersonalStatus,
+        User.Name UserName
+    FROM Media
+    INNER JOIN Theme ON Theme.Id = Media.ThemeId
+    INNER JOIN Source ON Source.KeyId = Theme.KeyId 
+    INNER JOIN SourceType ON SourceType.Id = Source.SourceTypeId AND SourceType.Name = 'MyAnimeList'
+    INNER JOIN MyAnimeList ON MyAnimeList.Id = Source.ExternalId 
+    INNER JOIN AniList_MyAnimeList ON AniList_MyAnimeList.MyAnimeListId = MyAnimeList.Id 
+    INNER JOIN AniList ON AniList.Id = AniList_MyAnimeList.AniListId
+    INNER JOIN Personal ON Personal.AniListId = Anilist.Id
+    INNER JOIN User ON User.Id = Personal.UserId
+    WHERE 
+        Media.IsFinalChoice = 1
+    AND Media.Id NOT IN (
+            SELECT DISTINCT 
+                Download.KeyId 
+            FROM Download
+        )
+    ORDER BY 
+        Media.ThemeId, Media.Id ASC;
 
 CREATE VIEW v_MyAnimeListScoutMismatch
 AS
@@ -209,7 +289,7 @@ AS
 
 CREATE VIEW v_PersonalList
 AS
-	SELECT
+    SELECT
         AniList.Id AniListId,
         AniList.Title AniListTitle,
         AniList.Type AniListType,
@@ -222,9 +302,9 @@ AS
         AniList.Address AniListAddress,
         Personal.Status PersonalStatus,
         User.Name UserName
-	FROM AniList
-	INNER JOIN Personal ON Personal.AniListId = AniList.Id
-	INNER JOIN User ON User.Id = Personal.UserId;
+    FROM AniList
+    INNER JOIN Personal ON Personal.AniListId = AniList.Id
+    INNER JOIN User ON User.Id = Personal.UserId;
 
 CREATE VIEW v_Anilist
 AS
@@ -249,8 +329,8 @@ AS
         Personal.Status PersonalStatus,
         User.Name UserName
     FROM AniList
-	INNER JOIN Personal ON Personal.AniListId = Anilist.Id
-	INNER JOIN User ON User.Id = Personal.UserId
+    INNER JOIN Personal ON Personal.AniListId = Anilist.Id
+    INNER JOIN User ON User.Id = Personal.UserId
     ORDER BY 
         AniList.Id ASC;
 
@@ -290,8 +370,8 @@ AS
     FROM MyAnimeList
     INNER JOIN AniList_MyAnimeList ON AniList_MyAnimeList.MyAnimeListId = MyAnimeList.Id 
     INNER JOIN AniList ON AniList.Id = AniList_MyAnimeList.AniListId
-	INNER JOIN Personal ON Personal.AniListId = Anilist.Id
-	INNER JOIN User ON User.Id = Personal.UserId
+    INNER JOIN Personal ON Personal.AniListId = Anilist.Id
+    INNER JOIN User ON User.Id = Personal.UserId
     ORDER BY 
         MyAnimeList.Id ASC;    
 
@@ -306,6 +386,7 @@ AS
         Theme.Type ThemeType,
         Theme.Sequence ThemeSequence,
         Theme.Algorithm ThemeAlgorithm,
+        Theme.CreatedOn ThemeCreatedOn,
         MyAnimeList.Id MyAnimeListId,
         MyAnimeList.Title MyAnimeListTitle,
         MyAnimeList.Type MyAnimeListType,
@@ -342,7 +423,79 @@ AS
     INNER JOIN MyAnimeList ON MyAnimeList.Id = Source.ExternalId 
     INNER JOIN AniList_MyAnimeList ON AniList_MyAnimeList.MyAnimeListId = MyAnimeList.Id 
     INNER JOIN AniList ON AniList.Id = AniList_MyAnimeList.AniListId
-	INNER JOIN Personal ON Personal.AniListId = Anilist.Id
-	INNER JOIN User ON User.Id = Personal.UserId
+    INNER JOIN Personal ON Personal.AniListId = Anilist.Id
+    INNER JOIN User ON User.Id = Personal.UserId
     ORDER BY 
         Anilist.Id ASC;
+
+CREATE VIEW v_Medias
+AS
+    SELECT
+        Media.Id MediaId,
+        Media.ThemeId MediaThemeId,
+        Media.KeyId MediaKeyId,
+        Media.Title MediaTitle,
+        Media.Description MediaDescription,
+        Media.Duration MediaDuration,
+        Media.DurationSeconds MediaDurationSeconds,
+        Media.NumberOfViews MediaNumberOfViews,
+        Media.NumberOfLikes MediaNumberOfLikes,
+        Media.SearchSequence MediaSearchSequence,
+        Media.IsLicensed MediaIsLicensed,
+        Media.IsBestRank MediaIsBestRank,
+        Media.IsFinalChoice MediaIsFinalChoice,
+        Media.Rank MediaRank,
+        Media.SearchType MediaSearchType,
+        Media.Address MediaAddress,
+        Media.CreatedOn MediaCreatedOn,
+        Media.LastModifiedOn MediaLastModifiedOn,
+        Theme.Id ThemeId,
+        Theme.KeyId ThemeKeyId,
+        Theme.Theme ThemeTheme,
+        Theme.Artist ThemeArtist,
+        Theme.Title ThemeTitle,
+        Theme.Type ThemeType,
+        Theme.Sequence ThemeSequence,
+        Theme.Algorithm ThemeAlgorithm,
+        Theme.CreatedOn ThemeCreatedOn,
+        MyAnimeList.Id MyAnimeListId,
+        MyAnimeList.Title MyAnimeListTitle,
+        MyAnimeList.Type MyAnimeListType,
+        MyAnimeList.Season MyAnimeListSeason,
+        MyAnimeList.SeasonYear MyAnimeListSeasonYear,
+        MyAnimeList.NumberOfEpisodes MyAnimeListNumberOfEpisodes,
+        MyAnimeList.StartDate MyAnimeListStartDate,
+        MyAnimeList.EndDate MyAnimeListEndDate,
+        MyAnimeList.Status MyAnimeListStatus,
+        MyAnimeList.CreatedOn MyAnimeListCreatedOn,
+        MyAnimeList.LastModifiedOn MyAnimeListLastModifiedOn,
+        AniList.Id AniListId,
+        AniList.Title AniListTitle,
+        AniList.Type AniListType,
+        AniList.Format AniListFormat,
+        AniList.Season AniListSeason,
+        AniList.SeasonYear AniListSeasonYear,
+        AniList.Genres AniListGenres,
+        AniList.NumberOfEpisodes AniListNumberOfEpisodes,
+        AniList.StartDate AniListStartDate,
+        AniList.StartWeekNumber AniListStartWeekNumber,
+        AniList.StartDayOfWeek AniListStartDayOfWeek,
+        AniList.HasPrequel AniListHasPrequel,
+        AniList.HasSequel AniListHasSequel,
+        AniList.Status AniListStatus,
+        AniList.Address AniListAddress,
+        AniList.CreatedOn AniListCreatedOn,
+        AniList.LastModifiedOn AniListLastModifiedOn,
+        Personal.Status PersonalStatus,
+        User.Name UserName
+    FROM Media
+    INNER JOIN Theme ON Theme.Id = Media.ThemeId
+    INNER JOIN Source ON Source.KeyId = Theme.KeyId 
+    INNER JOIN SourceType ON SourceType.Id = Source.SourceTypeId AND SourceType.Name = 'MyAnimeList'
+    INNER JOIN MyAnimeList ON MyAnimeList.Id = Source.ExternalId 
+    INNER JOIN AniList_MyAnimeList ON AniList_MyAnimeList.MyAnimeListId = MyAnimeList.Id 
+    INNER JOIN AniList ON AniList.Id = AniList_MyAnimeList.AniListId
+    INNER JOIN Personal ON Personal.AniListId = Anilist.Id
+    INNER JOIN User ON User.Id = Personal.UserId
+    ORDER BY
+        Media.ThemeId, Media.Id ASC;

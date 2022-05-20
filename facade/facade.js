@@ -26,6 +26,10 @@ class Facade {
         Log.warn('facade : medias command is not supported : see --help for more information');
     }
 
+    async getBatch(criteria) {
+        Log.warn('facade : download command is not supported : see --help for more information');
+    }
+
     async getAnimeByPickList(criteria) {
         Log.warn('facade : animepick command is not supported : see --help for more information');
     }
@@ -51,6 +55,10 @@ class Facade {
     }
 
     async saveMedias(medias) {
+        Log.warn('facade : medias command is not supported : see --help for more information');
+    }
+
+    async saveBatch(medias) {
         Log.warn('facade : medias command is not supported : see --help for more information');
     }
 

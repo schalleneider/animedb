@@ -3,6 +3,7 @@
 DROP TABLE Personal;
 DROP TABLE AniList_MyAnimeList;
 DROP TABLE SourceType;
+DROP TABLE Download;
 DROP TABLE Media;
 DROP TABLE AniList;
 DROP TABLE MyAnimeList;
@@ -97,12 +98,12 @@ CREATE TABLE "Personal" (
 CREATE TABLE "Theme" (
     "Id" INTEGER,
     "KeyId" TEXT,
-	"Theme" TEXT,
+    "Theme" TEXT,
     "Artist" TEXT,
     "Title" TEXT,
     "Type" TEXT,
     "Sequence" INTEGER,
-	"Algorithm" TEXT,
+    "Algorithm" TEXT,
     "CreatedOn" TEXT,
     PRIMARY KEY("Id"),
     FOREIGN KEY("KeyId") REFERENCES "Source"("KeyId")
@@ -129,4 +130,19 @@ CREATE TABLE "Media" (
     "LastModifiedOn" TEXT,
     PRIMARY KEY("Id")
     FOREIGN KEY("ThemeId") REFERENCES "Theme"("Id")
+);
+
+CREATE TABLE "Download" (
+    "Id" INTEGER,
+    "KeyId" INTEGER,
+    "Address" TEXT,
+    "Artist" TEXT,
+    "Title" TEXT,
+    "Album" TEXT,
+    "Path" TEXT,
+    "Status" TEXT,
+    "CreatedOn" TEXT,
+    "LastModifiedOn" TEXT,
+    PRIMARY KEY("Id")
+    FOREIGN KEY("KeyId") REFERENCES "Media"("Id")
 );

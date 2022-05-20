@@ -89,6 +89,30 @@ let argv = (yargs)(process.argv.slice(2))
         }
     })
     .command({
+        command: 'batch [options]',
+        desc: 'use to batch media information to prepare for download',
+        builder: (yargs) => { yargs
+            .options(commandOptions)
+            .demandOption(requiredOptions, "example: ./animedb.exe batch --env=env --source='animedb'")
+        },
+        handler: async (argv) => {
+            await (new Program(argv.env).runBatch(argv.source, argv.archive, argv.archivePath));
+            Log.info('main : batch command completed...');
+        }
+    })
+    .command({
+        command: 'download [options]',
+        desc: 'use to download media information from youtube',
+        builder: (yargs) => { yargs
+            .options(commandOptions)
+            .demandOption(requiredOptions, "example: ./animedb.exe download --env=env --source='animedb'")
+        },
+        handler: async (argv) => {
+            await (new Program(argv.env).runDownload(argv.source, argv.archive, argv.archivePath));
+            Log.info('main : download command completed...');
+        }
+    })
+    .command({
         command: 'animepick [options]',
         desc: 'use to get anime information from a manual list of identifiers',
         builder: (yargs) => { yargs

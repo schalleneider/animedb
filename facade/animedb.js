@@ -5,6 +5,7 @@ import { MyAnimeList } from './myanimelist.js';
 import { YouTube } from './youtube.js';
 
 import { Log } from '../log.js';
+import { Common } from '../common.js';
 import { Archive } from '../archive.js';
 
 class AnimeDB extends Facade {
@@ -14,6 +15,48 @@ class AnimeDB extends Facade {
         this.aniListFacade = new AniList(this.database);
         this.myAnimeListFacade = new MyAnimeList(this.database);
         this.youtubeFacade = new YouTube(this.database);
+    }
+
+    async getBatch(criteria) {
+
+        let batchList = [];
+
+        let medias = await this.database.getMedias(criteria);
+
+        for (let mediasIndex = 0; mediasIndex < medias.length; mediasIndex++) {
+            
+            const currentMedia = medias[mediasIndex];
+
+            Log.info(`animedb : batching media to download : [ ${currentMedia.MediaAddress} - ${currentMedia.ThemeArtist} - ${currentMedia.ThemeTitle} ]`);
+        
+            let item = {
+                media: {
+                    id: currentMedia.MediaId
+                },
+                download: {
+                    id: currentMedia.ThemeId,
+                    address: currentMedia.MediaAddress,
+                    artist: currentMedia.ThemeArtist,
+                    title: currentMedia.ThemeTitle,
+                    album: Common.parseDownloadAlbum(currentMedia),
+                    status: 'READY_TO_DOWNLOAD'
+                }
+            };
+
+            // path parsed after extracting download metadata
+            item.download.path = Common.parseDownloadPath(item);
+
+            // trace batch information
+            Log.trace(`animedb : parsed batch entry : [ ${item.media.id}, ${item.download.path} ]`);
+
+            batchList.push(item);
+
+            await Common.sleep(criteria.delay);
+        }
+
+        Archive.save(batchList, 'animedb_batch');
+
+        return batchList;
     }
 
     async getAnimeByPickList(criteria) {
@@ -28,6 +71,11 @@ class AnimeDB extends Facade {
         let medias = await this.youtubeFacade.getMediaByPickList(criteria);
         Archive.save(medias, 'animedb_mediapick');
         return medias
+    }
+
+    async saveBatch(batch) {
+        Log.info(`animedb : saving batch : [ ${batch.length} entries ]`);
+        await this.database.saveBatch(batch);
     }
 
     async saveAnimePick(animes) {
