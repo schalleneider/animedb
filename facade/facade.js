@@ -69,6 +69,10 @@ class Facade {
     async saveMediaPick(medias) {
         Log.warn('facade : mediapick command is not supported : see --help for more information');
     }
+
+    async processDownload(criteria) {
+        Log.warn('facade : download command is not supported : see --help for more information');
+    }
 }
 
 export { Facade };

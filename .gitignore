@@ -6,4 +6,5 @@
 !/config/animedb.env.json
 /database/**
 !/database/template.exemple.sqlite3
+/dist/**
 /logs/**

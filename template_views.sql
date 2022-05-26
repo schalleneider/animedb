@@ -11,6 +11,8 @@ DROP VIEW v_AniList;
 DROP VIEW v_MyAnimeList;
 DROP VIEW v_Themes;
 DROP VIEW v_Medias;
+DROP VIEW v_Downloads;
+DROP VIEW v_DownloadsReady;
 
 -- VIEWS
 
@@ -499,3 +501,100 @@ AS
     INNER JOIN User ON User.Id = Personal.UserId
     ORDER BY
         Media.ThemeId, Media.Id ASC;
+
+CREATE VIEW v_Downloads
+AS
+    SELECT
+        Download.Id DownloadId,
+        Download.KeyId DownloadKeyId,
+        Download.Address DownloadAddress,
+        Download.Artist DownloadArtist,
+        Download.Title DownloadTitle,
+        Download.Album DownloadAlbum,
+        Download.FileName DownloadFileName,
+        Download.Status DownloadStatus,
+        Download.CreatedOn DownloadCreatedOn,
+        Download.LastModifiedOn DownloadLastModifiedOn,
+        Media.Id MediaId,
+        Media.ThemeId MediaThemeId,
+        Media.KeyId MediaKeyId,
+        Media.Title MediaTitle,
+        Media.Description MediaDescription,
+        Media.Duration MediaDuration,
+        Media.DurationSeconds MediaDurationSeconds,
+        Media.NumberOfViews MediaNumberOfViews,
+        Media.NumberOfLikes MediaNumberOfLikes,
+        Media.SearchSequence MediaSearchSequence,
+        Media.IsLicensed MediaIsLicensed,
+        Media.IsBestRank MediaIsBestRank,
+        Media.IsFinalChoice MediaIsFinalChoice,
+        Media.Rank MediaRank,
+        Media.SearchType MediaSearchType,
+        Media.Address MediaAddress,
+        Media.CreatedOn MediaCreatedOn,
+        Media.LastModifiedOn MediaLastModifiedOn,
+        Theme.Id ThemeId,
+        Theme.KeyId ThemeKeyId,
+        Theme.Theme ThemeTheme,
+        Theme.Artist ThemeArtist,
+        Theme.Title ThemeTitle,
+        Theme.Type ThemeType,
+        Theme.Sequence ThemeSequence,
+        Theme.Algorithm ThemeAlgorithm,
+        Theme.CreatedOn ThemeCreatedOn,
+        MyAnimeList.Id MyAnimeListId,
+        MyAnimeList.Title MyAnimeListTitle,
+        MyAnimeList.Type MyAnimeListType,
+        MyAnimeList.Season MyAnimeListSeason,
+        MyAnimeList.SeasonYear MyAnimeListSeasonYear,
+        MyAnimeList.NumberOfEpisodes MyAnimeListNumberOfEpisodes,
+        MyAnimeList.StartDate MyAnimeListStartDate,
+        MyAnimeList.EndDate MyAnimeListEndDate,
+        MyAnimeList.Status MyAnimeListStatus,
+        MyAnimeList.CreatedOn MyAnimeListCreatedOn,
+        MyAnimeList.LastModifiedOn MyAnimeListLastModifiedOn,
+        AniList.Id AniListId,
+        AniList.Title AniListTitle,
+        AniList.Type AniListType,
+        AniList.Format AniListFormat,
+        AniList.Season AniListSeason,
+        AniList.SeasonYear AniListSeasonYear,
+        AniList.Genres AniListGenres,
+        AniList.NumberOfEpisodes AniListNumberOfEpisodes,
+        AniList.StartDate AniListStartDate,
+        AniList.StartWeekNumber AniListStartWeekNumber,
+        AniList.StartDayOfWeek AniListStartDayOfWeek,
+        AniList.HasPrequel AniListHasPrequel,
+        AniList.HasSequel AniListHasSequel,
+        AniList.Status AniListStatus,
+        AniList.Address AniListAddress,
+        AniList.CreatedOn AniListCreatedOn,
+        AniList.LastModifiedOn AniListLastModifiedOn,
+        Personal.Status PersonalStatus
+    FROM Download
+    INNER JOIN Media ON Media.Id = Download.KeyId
+    INNER JOIN Theme ON Theme.Id = Media.ThemeId
+    INNER JOIN Source ON Source.KeyId = Theme.KeyId 
+    INNER JOIN SourceType ON SourceType.Id = Source.SourceTypeId AND SourceType.Name = 'MyAnimeList'
+    INNER JOIN MyAnimeList ON MyAnimeList.Id = Source.ExternalId 
+    INNER JOIN AniList_MyAnimeList ON AniList_MyAnimeList.MyAnimeListId = MyAnimeList.Id 
+    INNER JOIN AniList ON AniList.Id = AniList_MyAnimeList.AniListId
+    INNER JOIN Personal ON Personal.AniListId = Anilist.Id
+    INNER JOIN User ON User.Id = Personal.UserId;
+
+CREATE VIEW v_DownloadsReady
+AS
+    SELECT
+        Download.Id DownloadId,
+        Download.KeyId DownloadKeyId,
+        Download.Address DownloadAddress,
+        Download.Artist DownloadArtist,
+        Download.Title DownloadTitle,
+        Download.Album DownloadAlbum,
+        Download.FileName DownloadFileName,
+        Download.Status DownloadStatus,
+        Download.CreatedOn DownloadCreatedOn,
+        Download.LastModifiedOn DownloadLastModifiedOn
+    FROM Download
+    WHERE
+        Download.Status IN ('READY_TO_DOWNLOAD');

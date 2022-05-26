@@ -120,6 +120,26 @@ class Database {
         return [];
     }
 
+    async getDownloads(criteria) {
+        try {
+
+            const result = await this.selectAll({
+                query: `${criteria.base} ${criteria.criteria} ${criteria.limit}`
+            });
+
+            if (result.length > 0) {
+                return result;
+            }
+
+        } catch (error) {
+            Log.error(`database : error retrieving medias : [ ${criteria} ]`);
+            Log.error(error.message);
+            Log.error(error.stack);
+        }
+
+        return [];
+    }
+
     async createSource(externalId, sourceType) {
 
         let currentSourceType = await this.select({
@@ -649,7 +669,7 @@ class Database {
             try {
                 
                 await this.exec({
-                    query: `INSERT INTO Download (Id, KeyId, Address, Artist, Title, Album, Path, Status, CreatedOn, LastModifiedOn) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                    query: `INSERT INTO Download (Id, KeyId, Address, Artist, Title, Album, FileName, Status, CreatedOn, LastModifiedOn) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                     params: [
                         currentDownload.id,
                         currentDownloadMedia.id,
@@ -657,7 +677,7 @@ class Database {
                         currentDownload.artist,
                         currentDownload.title,
                         currentDownload.album,
-                        currentDownload.path,
+                        currentDownload.fileName,
                         currentDownload.status,
                         Common.getMomentNowFormat(),
                         Common.getMomentNowFormat()
@@ -670,6 +690,35 @@ class Database {
                 Log.error(error.stack);
                 execResults.errors++;
             }
+        }
+
+        await this.commit();
+
+        Log.info(`database : download updated : [ added: ${execResults.added}, updated: ${execResults.updated}, deleted: ${execResults.deleted}, errors: ${execResults.errors} ]`);
+    }
+
+    async saveDownload(downloadId) {
+
+        let execResults = { added: 0, updated: 0, deleted: 0, errors: 0 };
+
+        await this.begin();
+
+        try {
+            
+            await this.exec({
+                query: `UPDATE Download SET Status = ? WHERE Id = ?`,
+                params: [
+                    "DONE",
+                    downloadId
+                ]
+            });
+            execResults.updated++;
+            
+        } catch (error) {
+            Log.error(`database : error updating download : [ ${currentDownloadMedia.id} ]`);
+            Log.error(error.message);
+            Log.error(error.stack);
+            execResults.errors++;
         }
 
         await this.commit();

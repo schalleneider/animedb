@@ -139,7 +139,7 @@ CREATE TABLE "Download" (
     "Artist" TEXT,
     "Title" TEXT,
     "Album" TEXT,
-    "Path" TEXT,
+    "FileName" TEXT,
     "Status" TEXT,
     "CreatedOn" TEXT,
     "LastModifiedOn" TEXT,

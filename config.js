@@ -65,6 +65,10 @@ class Config {
         return Config.config.command.batch;
     }
 
+    static get commandDownload() {
+        return Config.config.command.download;
+    }
+
     static get commandAnimePick() {
         return Config.config.command.animepick;
     }

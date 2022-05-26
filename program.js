@@ -221,13 +221,12 @@ class Program {
             await this.database.init();
 
             let facade = this.buildFacade(source);
-            let medias = [];
 
             if (fromArchive) {
                 throw Error(`program : redo from archive is not available for download command`);
-            } 
-            
-            // download
+            }
+
+            await await facade.processDownload(Config.commandDownload);
             
         } catch (error) {
             if (error.isAxiosError) {

@@ -143,8 +143,8 @@ class Common {
         return `${media.AniListTitle} - ${Common.parseThemeType(media.ThemeType)} ${media.ThemeSequence}`;
     }
     
-    static parseDownloadPath(download) {
-        return `'${String(download.download.id).padStart(4, '0')}'_'${download.download.artist}'_'${download.download.title}'_'${download.download.album}'.mp3`;
+    static parseDownloadFileName(download) {
+        return `'${String(download.download.id).padStart(4, '0')}'_'${download.download.artist}'_'${download.download.title}'_'${download.download.album}'`;
     }
 }
 
