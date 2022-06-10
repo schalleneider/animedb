@@ -145,7 +145,7 @@ class Common {
     
     static parseDownloadFileName(download) {
         const fileName = `'${String(download.download.id).padStart(4, '0')}'_'${download.download.artist}'_'${download.download.title}'_'${download.download.album}'`;
-        return fileName.replace(/[^a-z0-9'-_~&.!\s]+/gi, ' ');
+        return fileName.replace(/[^a-z0-9\s\!\#\$\%\&\'\(\)\+\,\-\.\=\@\[\]\^\_\`\{\}\~]+/gi, ' ');
     }
 }
 

@@ -17,15 +17,15 @@ class Database {
     }
 
     async begin() {
-        this.database.run("begin transaction");
+        await this.database.run("begin transaction");
     }
 
     async commit() {
-        this.database.run("commit");
+        await this.database.run("commit");
     }
 
     async rollback() {
-        this.database.run("rollback");
+        await this.database.run("rollback");
     }
 
     async select(config) {
