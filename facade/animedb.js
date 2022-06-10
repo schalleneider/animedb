@@ -50,7 +50,7 @@ class AnimeDB extends Facade {
             item.download.fileName = Common.parseDownloadFileName(item);
 
             // trace batch information
-            Log.trace(`animedb : parsed batch entry : [ ${item.media.id}, ${item.download.path} ]`);
+            Log.trace(`animedb : parsed batch entry : [ ${item.media.id}, ${item.download.fileName} ]`);
 
             batchList.push(item);
 

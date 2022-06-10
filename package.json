@@ -5,7 +5,7 @@
   "type": "module",
   "exports": "./main.js",
   "scripts": {
-    "redist": "npx caxa --input '.' --output './bin/animedb.exe' -- '{{caxa}}/node_modules/.bin/node' '{{caxa}}/main.js'",
+    "redist": "npx caxa --input '.' --output './bin/animedb.exe' --exclude './archive' './auth' './bin' './config' './database' './dist' './logs' -- '{{caxa}}/node_modules/.bin/node' '{{caxa}}/main.js'",
     "dev:help": "node main.js --help",
     "dev:start:seasons:anilist": "node main.js seasons --source='anilist'",
     "dev:start:seasons:myanimelist": "node main.js seasons --source='myanimelist'",
