@@ -114,7 +114,7 @@ class AnimeDB extends Facade {
             
                 execSync(`${youtubedl} ${args}`, { stdio: 'inherit' });
 
-                this.database.saveDownload(currentDownload.DownloadId);
+                await this.database.saveDownload(currentDownload.DownloadId);
 
                 processResults.success++
 
