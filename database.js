@@ -29,15 +29,15 @@ class Database {
     }
 
     async select(config) {
-        return this.database.get(config.query, config.params)
+        return await this.database.get(config.query, config.params)
     }
 
     async selectAll(config) {
-        return this.database.all(config.query, config.params)
+        return await this.database.all(config.query, config.params)
     }
 
     async exec(config) {
-        return this.database.run(config.query, config.params)
+        return await this.database.run(config.query, config.params)
     }
 
     async getAniList(criteria) {
