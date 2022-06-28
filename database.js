@@ -715,7 +715,7 @@ class Database {
             execResults.updated++;
             
         } catch (error) {
-            Log.error(`database : error updating download : [ ${currentDownloadMedia.id} ]`);
+            Log.error(`database : error updating download : [ ${downloadId} ]`);
             Log.error(error.message);
             Log.error(error.stack);
             execResults.errors++;

@@ -226,7 +226,7 @@ class Program {
                 throw Error(`program : redo from archive is not available for download command`);
             }
 
-            await await facade.processDownload(Config.commandDownload);
+            await facade.processDownload(Config.commandDownload);
             
         } catch (error) {
             if (error.isAxiosError) {
