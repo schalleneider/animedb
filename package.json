@@ -1,6 +1,6 @@
 {
   "name": "animedb",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "animedb",
   "type": "module",
   "exports": "./main.js",
@@ -15,6 +15,7 @@
     "dev:start:medias:youtube": "node main.js medias --source='youtube'",
     "dev:start:batch:animedb": "node main.js batch --source='animedb'",
     "dev:start:download:animedb": "node main.js download --source='animedb'",
+    "dev:start:tags:animedb": "node main.js tags --source='animedb'",
     "dev:start:animepick:animedb": "node main.js animepick --source='animedb'",
     "dev:start:mediapick:animedb": "node main.js mediapick --source='animedb'",
     "dev:redo:seasons:anilist": "node main.js seasons --source='anilist' --archive --archivePath='archive/anilist_seasons.json' ",
@@ -35,6 +36,7 @@
     "start:medias:youtube": "./bin/animedb.exe medias --env=live --source='youtube'",
     "start:batch:animedb": "./bin/animedb.exe batch --env=live --source='animedb'",
     "start:download:animedb": "./bin/animedb.exe download --env=live --source='animedb'",
+    "start:tags:animedb": "./bin/animedb.exe tags --env=live --source='animedb'",
     "start:animepick:animedb": "./bin/animedb.exe animepick --env=live --source='animedb'",
     "start:mediapick:animedb": "./bin/animedb.exe mediapick --env=live --source='animedb'",
     "redo:seasons:anilist": "./bin/animedb.exe seasons --env=live --source='anilist' --archive --archivePath='archive/anilist_seasons.json'",

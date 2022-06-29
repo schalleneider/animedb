@@ -697,7 +697,7 @@ class Database {
         Log.info(`database : download updated : [ added: ${execResults.added}, updated: ${execResults.updated}, deleted: ${execResults.deleted}, errors: ${execResults.errors} ]`);
     }
 
-    async saveDownload(downloadId) {
+    async saveDownload(downloadId, nextStatus) {
 
         let execResults = { added: 0, updated: 0, deleted: 0, errors: 0 };
 
@@ -708,7 +708,7 @@ class Database {
             await this.exec({
                 query: `UPDATE Download SET Status = ? WHERE Id = ?`,
                 params: [
-                    "DONE",
+                    nextStatus,
                     downloadId
                 ]
             });

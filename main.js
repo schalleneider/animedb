@@ -113,6 +113,18 @@ let argv = (yargs)(process.argv.slice(2))
         }
     })
     .command({
+        command: 'tags [options]',
+        desc: 'use to update metadata information from downloaded media',
+        builder: (yargs) => { yargs
+            .options(commandOptions)
+            .demandOption(requiredOptions, "example: ./animedb.exe tags --env=env --source='animedb'")
+        },
+        handler: async (argv) => {
+            await (new Program(argv.env).runTags(argv.source, argv.archive, argv.archivePath));
+            Log.info('main : tags command completed...');
+        }
+    })
+    .command({
         command: 'animepick [options]',
         desc: 'use to get anime information from a manual list of identifiers',
         builder: (yargs) => { yargs

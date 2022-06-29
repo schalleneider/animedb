@@ -73,6 +73,10 @@ class Facade {
     async processDownload(criteria) {
         Log.warn('facade : download command is not supported : see --help for more information');
     }
+    
+    async processTags(criteria) {
+        Log.warn('facade : tags command is not supported : see --help for more information');
+    }
 }
 
 export { Facade };

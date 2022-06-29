@@ -13,6 +13,7 @@ DROP VIEW v_Themes;
 DROP VIEW v_Medias;
 DROP VIEW v_Downloads;
 DROP VIEW v_DownloadsReady;
+DROP VIEW v_DownloadsToTag;
 
 -- VIEWS
 
@@ -598,3 +599,20 @@ AS
     FROM Download
     WHERE
         Download.Status IN ('READY_TO_DOWNLOAD');
+
+CREATE VIEW v_DownloadsToTag
+AS
+    SELECT
+        Download.Id DownloadId,
+        Download.KeyId DownloadKeyId,
+        Download.Address DownloadAddress,
+        Download.Artist DownloadArtist,
+        Download.Title DownloadTitle,
+        Download.Album DownloadAlbum,
+        Download.FileName DownloadFileName,
+        Download.Status DownloadStatus,
+        Download.CreatedOn DownloadCreatedOn,
+        Download.LastModifiedOn DownloadLastModifiedOn
+    FROM Download
+    WHERE
+        Download.Status IN ('READY_TO_TAG');

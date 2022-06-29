@@ -1,3 +1,4 @@
+import fs from 'fs';
 import path from 'path';
 import { execSync } from 'child_process';
 
@@ -114,7 +115,7 @@ class AnimeDB extends Facade {
             
                 execSync(`${youtubedl} ${args}`, { stdio: 'inherit' });
 
-                await this.database.saveDownload(currentDownload.DownloadId);
+                await this.database.saveDownload(currentDownload.DownloadId, criteria.nextStatus);
 
                 processResults.success++
 
@@ -127,6 +128,46 @@ class AnimeDB extends Facade {
         }
 
         Log.info(`animedb : download process completed : [ success: ${processResults.success}, errors: ${processResults.errors} ]`);
+    }
+
+    async processTags(criteria) {
+
+        let processResults = { success: 0, errors: 0 };
+        
+        const tageditor = path.join(path.resolve(criteria.binPath), "tageditor.exe");
+        
+        let downloads = await this.database.getDownloads(criteria);
+
+        for (let downloadsIndex = 0; downloadsIndex < downloads.length; downloadsIndex++) {
+            
+            const currentDownload = downloads[downloadsIndex];
+
+            Log.info(`animedb : processing tags : [ ${currentDownload.DownloadFileName} - ${currentDownload.DownloadAddress} ]`);
+
+            try {
+
+                const currentMediaFile = path.join(path.resolve(criteria.outputPath), `${currentDownload.DownloadFileName}.${criteria.audioFormat}`);
+                
+                if (!fs.existsSync(currentMediaFile)) {
+                    throw new Error(`[ ${currentMediaFile} ] file not found`);
+                }
+
+                const args = `-s title="${currentDownload.DownloadTitle}" artist="${currentDownload.DownloadArtist}" album="${currentDownload.DownloadAlbum}" track="${currentDownload.DownloadId}" --max-padding 100000 -f "${currentMediaFile}"`;
+                execSync(`${tageditor} ${args}`, { stdio: 'inherit' });
+                
+                await this.database.saveDownload(currentDownload.DownloadId, criteria.nextStatus);
+
+                processResults.success++
+
+            } catch (error) {
+                Log.error(`[ ${currentDownload.DownloadFileName} - ${currentDownload.DownloadAddress} ] : ${error.message}`);
+                processResults.errors++;
+            }
+            
+            await Common.sleep(criteria.delay);
+        }
+
+        Log.info(`animedb : tags process completed : [ success: ${processResults.success}, errors: ${processResults.errors} ]`);
     }
 
     mergeAnimeList(criteria, aniListAnimes, myAnimeListAnimes) {

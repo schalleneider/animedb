@@ -237,6 +237,29 @@ class Program {
         }
     }
 
+    async runTags(source, fromArchive = false, archivePath) {
+        try {
+            Log.info(`program : download command : [ ${source}, ${Config.configFile} ]`);
+
+            await this.database.init();
+
+            let facade = this.buildFacade(source);
+
+            if (fromArchive) {
+                throw Error(`program : redo from archive is not available for tags command`);
+            }
+
+            await facade.processTags(Config.commandTags);
+            
+        } catch (error) {
+            if (error.isAxiosError) {
+                Log.fatal(error.response.data.errors);
+            }
+            Log.fatal(error.message);
+            Log.fatal(error.stack);
+        }
+    }
+
     async runAnimePick(source, fromArchive = false, archivePath) {
         try {
             Log.info(`program : animepick command : [ ${source}, ${Config.configFile} ]`);
