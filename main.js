@@ -137,6 +137,18 @@ let argv = (yargs)(process.argv.slice(2))
         }
     })
     .command({
+        command: 'themespick [options]',
+        desc: 'use to get themes media information from a manual list of identifiers',
+        builder: (yargs) => { yargs
+            .options(commandOptions)
+            .demandOption(requiredOptions, "example: ./animedb.exe themespick --env=env --source='animedb'")
+        },
+        handler: async (argv) =>  {
+            await (new Program(argv.env).runThemesPick(argv.source, argv.archive, argv.archivePath));
+            Log.info('main : themespick command completed...');
+        }
+    })
+    .command({
         command: 'mediapick [options]',
         desc: 'use to get media information from a manual list of youtube videos',
         builder: (yargs) => { yargs

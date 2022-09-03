@@ -70,7 +70,7 @@ AS
     INNER JOIN Personal ON Personal.AniListId = AniList.Id
     INNER JOIN User ON User.Id = Personal.UserId
     WHERE 
-        Personal.Status NOT IN ('DROPPED')
+        Personal.Status IN ('CURRENT')
     AND MyAnimeList.Id NOT IN (
             SELECT DISTINCT 
                 Source.ExternalId 

@@ -216,6 +216,28 @@ class Database {
         }
     }
 
+    async reviewTheme(theme, currentAnimeMyAnimeList) {
+
+        Log.warn(`theme review for: [ ${theme.title} ${theme.artist} - ${theme.type} ${theme.sequence} ]`);
+
+        let existingTheme = await this.select({
+            query: `SELECT T.Id, T.Artist, T.Title, T.Type, T.Sequence FROM Theme T INNER JOIN Source S ON S.KeyId = T.KeyId INNER JOIN SourceType ST ON S.SourceTypeId = ST.Id WHERE ST.Name = ? AND S.ExternalId = ? AND T.Type = ? AND T.Sequence = ?`,
+            params: [
+                'MyAnimeList',
+                currentAnimeMyAnimeList.id,
+                theme.type,
+                theme.sequence
+            ]
+        });
+
+        if (existingTheme === undefined) {
+            return await Prompt.askConfirmation(`existing theme for [ ${currentAnimeMyAnimeList.id} ${currentAnimeMyAnimeList.title} ${theme.type} ${theme.sequence} ] not found. proceeding will force the creation of a new entry in database. proceed ?`);
+        }
+        else {
+            return await Prompt.askCautionConfirmation(`this theme is already in the database: [ ${existingTheme.Title} ${existingTheme.Artist} - ${existingTheme.Type} ${existingTheme.Sequence} ]. proceeding will force the creation of a new entry in database. proceed ?`);
+        }
+    }
+
     async saveAniList(animes) {
 
         let execResults = { added: 0, updated: 0, deleted: 0, errors: 0 };
@@ -511,8 +533,6 @@ class Database {
             const currentAnimeMyAnimeList = animes[animeIndex].myanimelist;
             const currentAnimeThemes = animes[animeIndex].themes;
 
-            let createThemes = true;
-
             try {
 
                 let existingThemes = await this.select({
@@ -529,31 +549,34 @@ class Database {
 
                 if (existingThemes.Count > 0) {
 
-                    let mustDelete = await Prompt.askConfirmation(`[ ${existingThemes.Count} ] themes were found for the anime [ ${existingThemes.KeyId} : ${currentAnimeMyAnimeList.title} ]. themes and link data related to this anime must be deleted. proceed ?`);
+                    let mustReview = await Prompt.askConfirmation(`[ ${existingThemes.Count} ] existing themes were found for the anime [ ${existingThemes.KeyId} : ${currentAnimeMyAnimeList.title} ]. themes related to this anime must be reviewed individually to avoid conflicts. proceed ?`);
 
-                    if (mustDelete) {
+                    // theme creation / update reviewd individually
+                    if (mustReview) {
+                        
+                        for (let openingIndex = 0; openingIndex < currentAnimeThemes.openings.length; openingIndex++) {
+                            
+                            let mustForceCreate = await this.reviewTheme(currentAnimeThemes.openings[openingIndex], currentAnimeMyAnimeList);
 
-                        let linkCleanupResult = await this.exec({
-                            query: `DELETE FROM Media WHERE ThemeId IN (SELECT Id FROM Theme WHERE KeyId = ?)`,
-                            params: [
-                                existingThemes.KeyId
-                            ]
-                        });
-                        execResults.deleted += linkCleanupResult.changes;
+                            if (mustForceCreate) {
+                                await this.createTheme(currentAnimeThemes.openings[openingIndex], existingThemes.KeyId);
+                                execResults.added++;
+                            }
+                        }
+    
+                        for (let endingIndex = 0; endingIndex < currentAnimeThemes.endings.length; endingIndex++) {
 
-                        let themeCleanupResult = await this.exec({
-                            query: `DELETE FROM Theme WHERE KeyId = ?`,
-                            params: [
-                                existingThemes.KeyId
-                            ]
-                        });
-                        execResults.deleted += themeCleanupResult.changes;
-                    } else {
-                        createThemes = false;
+                            let mustForceCreate = await this.reviewTheme(currentAnimeThemes.endings[endingIndex], currentAnimeMyAnimeList);
+
+                            if (mustForceCreate) {
+                                await this.createTheme(currentAnimeThemes.endings[endingIndex], existingThemes.KeyId);
+                                execResults.added++;
+                            }
+                        }
                     }
                 }
-
-                if (createThemes) {
+                else { // default theme creation without conflict
+ 
                     for (let openingIndex = 0; openingIndex < currentAnimeThemes.openings.length; openingIndex++) {
                         await this.createTheme(currentAnimeThemes.openings[openingIndex], existingThemes.KeyId);
                         execResults.added++;

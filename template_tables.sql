@@ -104,6 +104,7 @@ CREATE TABLE "Theme" (
     "Type" TEXT,
     "Sequence" INTEGER,
     "Algorithm" TEXT,
+    "AppHidden" INTEGER,
     "CreatedOn" TEXT,
     PRIMARY KEY("Id"),
     FOREIGN KEY("KeyId") REFERENCES "Source"("KeyId")

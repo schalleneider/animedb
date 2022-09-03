@@ -290,6 +290,36 @@ class Program {
         }
     }
 
+    async runThemesPick(source, fromArchive = false, archivePath) {
+        try {
+            Log.info(`program : themespick command : [ ${source}, ${Config.configFile} ]`);
+
+            await this.database.init();
+
+            let facade = this.buildFacade('animedb');
+            let animes = [];
+
+            if (fromArchive) {
+                animes = Archive.load(archivePath)
+            } else {
+                animes = await facade.getAnimeThemesByPickList(Config.commandThemesPick);
+            }
+            
+            if (animes && animes.length > 0) {
+                await facade.saveThemesPick(animes);
+            } else {
+                Log.warn(`program : themespick command : no data to save : [ ${source}, ${Config.configFile} ]`);
+            }
+            
+        } catch (error) {
+            if (error.isAxiosError) {
+                Log.fatal(error.response.data.errors);
+            }
+            Log.fatal(error.message);
+            Log.fatal(error.stack);
+        }
+    }
+
     async runMediaPick(source, fromArchive = false, archivePath) {
         try {
             Log.info(`program : mediapick command : [ ${source}, ${Config.configFile} ]`);

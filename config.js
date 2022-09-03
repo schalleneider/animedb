@@ -77,6 +77,10 @@ class Config {
         return Config.config.command.animepick;
     }
 
+    static get commandThemesPick() {
+        return Config.config.command.themespick;
+    }
+    
     static get commandMediaPick() {
         return Config.config.command.mediapick;
     }

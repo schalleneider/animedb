@@ -244,6 +244,55 @@ class MyAnimeList extends Facade {
 
         return animeList;
     }
+
+    async getAnimeThemesByPickList(criteria) {
+        
+        let animeList = [];
+
+        let baseUrl = "https://api.myanimelist.net/v2/anime";
+        
+        for (let identifierIndex = 0; identifierIndex < criteria.list.length; identifierIndex++) {
+            
+            const currentIdentifier = criteria.list[identifierIndex];
+
+            Log.info(`myanimelist : getting theme pick : [ ${currentIdentifier.myAnimeListId} ]`);
+
+            let authHeader = JSON.parse(`{ "${this.auth.header}" : "${this.auth.value}" }`);
+
+            axiosRetry(axios, { retries: 3, retryDelay: (5 * 1000) });
+
+            const config = {
+                url: `${baseUrl}/${currentIdentifier.myAnimeListId}`,
+                method: 'GET',
+                headers: authHeader,
+                params: {
+                    fields: 'id,title,start_date,end_date,media_type,status,num_episodes,start_season,opening_themes,ending_themes'
+                }
+            };
+
+            try {
+                
+                const response = await axios(config);
+
+                let parsedResponse = this.parseAnimeThemesResponse(response.data);
+
+                animeList = animeList.concat(parsedResponse);
+
+            } catch (error) {
+                if (error.isAxiosError) {
+                    Log.warn(`[ ${currentEntry.MyAnimeListTitle} ] : ${JSON.stringify(error.response.data)}`);
+                } else {
+                    Log.error(`[ ${currentEntry.MyAnimeListTitle} ] : ${error.message}`);
+                }
+            }
+
+            await Common.sleep(criteria.delay);
+        }
+
+        Archive.save(animeList, 'myanimelist_themespick');
+
+        return animeList;
+    }
     
     async saveAnime(animes) {
         Log.info(`myanimelist : saving anime : [ ${animes.length} entries ]`);
@@ -266,6 +315,12 @@ class MyAnimeList extends Facade {
         Log.info(`myanimelist : saving anime pick : [ ${animes.length} entries ]`);
         await this.database.saveMyAnimeList(animes);
         await this.database.saveScout(animes);
+    }
+    
+    async saveThemesPick(animes) {
+        Log.info(`myanimelist : saving anime themes pick : [ ${animes.length} entries ]`);
+        await this.database.saveMyAnimeList(animes);
+        await this.database.saveThemes(animes);
     }
 
     parseAnimeNode(node) {

@@ -71,6 +71,12 @@ class AnimeDB extends Facade {
         return animes
     }
     
+    async getAnimeThemesByPickList(criteria) {
+        let animes = await this.myAnimeListFacade.getAnimeThemesByPickList(criteria);
+        Archive.save(animes, 'animedb_themespick');
+        return animes
+    }
+    
     async getMediaByPickList(criteria) {
         let medias = await this.youtubeFacade.getMediaByPickList(criteria);
         Archive.save(medias, 'animedb_mediapick');
@@ -86,6 +92,11 @@ class AnimeDB extends Facade {
         Log.info(`animedb : saving anime pick : [ ${animes.length} entries ]`);
         await this.aniListFacade.saveAnimePick(animes);
         await this.myAnimeListFacade.saveAnimePick(animes);
+    }
+    
+    async saveThemesPick(animes) {
+        Log.info(`animedb : saving themes pick : [ ${animes.length} entries ]`);
+        await this.myAnimeListFacade.saveThemesPick(animes);
     }
     
     async saveMediaPick(medias) {
