@@ -128,7 +128,7 @@ class AnimeDB extends Facade {
 
                 await this.database.saveDownload(currentDownload.DownloadId, criteria.nextStatus);
 
-                processResults.success++
+                processResults.success++;
 
             } catch (error) {
                 Log.error(`[ ${currentDownload.DownloadFileName} - ${currentDownload.DownloadAddress} ] : ${error.message}`);
@@ -168,7 +168,7 @@ class AnimeDB extends Facade {
                 
                 await this.database.saveDownload(currentDownload.DownloadId, criteria.nextStatus);
 
-                processResults.success++
+                processResults.success++;
 
             } catch (error) {
                 Log.error(`[ ${currentDownload.DownloadFileName} - ${currentDownload.DownloadAddress} ] : ${error.message}`);
@@ -179,6 +179,39 @@ class AnimeDB extends Facade {
         }
 
         Log.info(`animedb : tags process completed : [ success: ${processResults.success}, errors: ${processResults.errors} ]`);
+    }
+
+    async processPlaylist(criteria) {
+
+        let processResults = { success: 0, errors: 0 };
+        
+        let downloads = await this.database.getDownloads(criteria);
+
+        Log.info(`animedb : processing playlist : [ ${criteria.playlistName} ]`);
+
+        try {
+            
+            let writeStream = fs.createWriteStream(path.join(path.resolve(criteria.outputPath), `${criteria.playlistName}.${criteria.playlistFormat}`), { flags: "w", encoding: "utf-8" });
+
+            for (let downloadsIndex = 0; downloadsIndex < downloads.length; downloadsIndex++) {
+                
+                const currentDownload = downloads[downloadsIndex];
+
+                const playlistLine = `${path.join(criteria.basePath, `${currentDownload.DownloadFileName}.${criteria.audioFormat}`)}\n`;
+
+                writeStream.write(playlistLine);
+
+                processResults.success++;
+            }
+            
+            writeStream.end();
+
+        } catch (error) {
+            Log.error(`[ ${criteria.playlistName} ] : ${error.message}`);
+            processResults.errors++;
+        }
+
+        Log.info(`animedb : playlist process completed : [ success: ${processResults.success}, errors: ${processResults.errors} ]`);
     }
 
     mergeAnimeList(criteria, aniListAnimes, myAnimeListAnimes) {

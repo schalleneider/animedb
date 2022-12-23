@@ -125,6 +125,18 @@ let argv = (yargs)(process.argv.slice(2))
         }
     })
     .command({
+        command: 'playlist [options]',
+        desc: 'use to create a playlist from downloaded media',
+        builder: (yargs) => { yargs
+            .options(commandOptions)
+            .demandOption(requiredOptions, "example: ./animedb.exe playlist --env=env --source='animedb'")
+        },
+        handler: async (argv) => {
+            await (new Program(argv.env).runPlaylist(argv.source, argv.archive, argv.archivePath));
+            Log.info('main : playlist command completed...');
+        }
+    })
+    .command({
         command: 'animepick [options]',
         desc: 'use to get anime information from a manual list of identifiers',
         builder: (yargs) => { yargs

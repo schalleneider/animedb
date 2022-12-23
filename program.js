@@ -239,7 +239,7 @@ class Program {
 
     async runTags(source, fromArchive = false, archivePath) {
         try {
-            Log.info(`program : download command : [ ${source}, ${Config.configFile} ]`);
+            Log.info(`program : tags command : [ ${source}, ${Config.configFile} ]`);
 
             await this.database.init();
 
@@ -250,6 +250,29 @@ class Program {
             }
 
             await facade.processTags(Config.commandTags);
+            
+        } catch (error) {
+            if (error.isAxiosError) {
+                Log.fatal(error.response.data.errors);
+            }
+            Log.fatal(error.message);
+            Log.fatal(error.stack);
+        }
+    }
+
+    async runPlaylist(source, fromArchive = false, archivePath) {
+        try {
+            Log.info(`program : playlist command : [ ${source}, ${Config.configFile} ]`);
+
+            await this.database.init();
+
+            let facade = this.buildFacade(source);
+
+            if (fromArchive) {
+                throw Error(`program : redo from archive is not available for playlist command`);
+            }
+
+            await facade.processPlaylist(Config.commandPlaylist);
             
         } catch (error) {
             if (error.isAxiosError) {

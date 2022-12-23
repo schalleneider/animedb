@@ -72,6 +72,10 @@ class Config {
     static get commandTags() {
         return Config.config.command.tags;
     }
+    
+    static get commandPlaylist() {
+        return Config.config.command.playlist;
+    }
 
     static get commandAnimePick() {
         return Config.config.command.animepick;
