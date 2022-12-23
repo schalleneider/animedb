@@ -613,6 +613,22 @@ class Database {
 
             try {
 
+                const currentThemeDownloadExists = await this.select({
+                    query: `SELECT COUNT(Download.Id) DownloadThemeCount FROM Download INNER JOIN Media ON Download.KeyId = Media.Id WHERE Media.ThemeId = ?`,
+                    params: [
+                        currentMediaTheme.id
+                    ]
+                });
+
+                if (currentThemeDownloadExists) {
+                    if (currentThemeDownloadExists.DownloadThemeCount > 0) {
+                        let mustDeleteDownload = await Prompt.askConfirmation(`[${currentThemeDownloadExists.DownloadThemeCount}] downloads were found for theme [${currentMediaTheme.id}]. delete previous data to proceed ?`);
+                        if (!mustDeleteDownload) {
+                            throw new Error(`downloads were found and delete was not accepted. no download changes will be done for theme [${currentMediaTheme.id}].`);
+                        }
+                    }
+                }
+                
                 const currentThemeMediaExists = await this.select({
                     query: `SELECT ThemeId, SUM(CASE IsFinalChoice WHEN 1 THEN 1 ELSE 0 END) FinalChoiceCount, SUM(CASE IsFinalChoice WHEN 0 THEN 1 ELSE 0 END) PendingChoiceCount FROM Media WHERE ThemeId = ?`,
                     params: [
@@ -622,20 +638,28 @@ class Database {
 
                 if (currentThemeMediaExists) {
                     if (currentThemeMediaExists.FinalChoiceCount > 0) {
-                        let mustDelete = await Prompt.askConfirmation(`[${currentThemeMediaExists.FinalChoiceCount}] final choice medias were found for theme [${currentMediaTheme.id}]. delete previous data to proceed ?`);
-                        if (!mustDelete) {
+                        let mustDeleteMedia = await Prompt.askConfirmation(`[${currentThemeMediaExists.FinalChoiceCount}] final choice medias were found for theme [${currentMediaTheme.id}]. delete previous data to proceed ?`);
+                        if (!mustDeleteMedia) {
                             throw new Error(`final choice medias were found and delete was not accepted. no media changes will be done for theme [${currentMediaTheme.id}].`);
                         }
                     }
                 }
 
-                let cleanupResult = await this.exec({
+                let cleanupDownloadResult = await this.exec({
+                    query: `DELETE FROM Download WHERE KeyId IN (SELECT Id FROM Media WHERE ThemeId = ?)`,
+                    params: [
+                        currentMediaTheme.id
+                    ]
+                });
+                execResults.deleted += cleanupDownloadResult.changes;
+                
+                let cleanupMediaResult = await this.exec({
                     query: `DELETE FROM Media WHERE ThemeId = ?`,
                     params: [
                         currentMediaTheme.id
                     ]
                 });
-                execResults.deleted += cleanupResult.changes;
+                execResults.deleted += cleanupMediaResult.changes;
 
                 for (let mediaIndex = 0; mediaIndex < currentMediaYoutubeList.length; mediaIndex++) {
 
