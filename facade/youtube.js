@@ -250,6 +250,7 @@ class YouTube extends Facade {
             keyId: info.id,
             title: info.snippet.title,
             description: info.snippet.description,
+            channel: info.snippet.channelTitle,
             duration: info.contentDetails.duration,
             durationSeconds: Common.convertISO8601ToSeconds(info.contentDetails.duration),
             numberOfViews: info.statistics.viewCount,

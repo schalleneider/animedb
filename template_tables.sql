@@ -116,6 +116,7 @@ CREATE TABLE "Media" (
     "KeyId" TEXT,
     "Title" TEXT,
     "Description" TEXT,
+    "Channel" TEXT,
     "Duration" TEXT,
     "DurationSeconds" INTEGER,
     "NumberOfViews" INTEGER,

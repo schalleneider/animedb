@@ -642,12 +642,13 @@ class Database {
                     const currentMediaYouTube = currentMediaYoutubeList[mediaIndex];
 
                     await this.exec({
-                        query: `INSERT INTO Media (Id, ThemeId, KeyId, Title, Description, Duration, DurationSeconds, NumberOfViews, NumberOfLikes, SearchSequence, IsLicensed, IsBestRank, IsFinalChoice, Rank, SearchType, Address, CreatedOn, LastModifiedOn) VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                        query: `INSERT INTO Media (Id, ThemeId, KeyId, Title, Description, Channel, Duration, DurationSeconds, NumberOfViews, NumberOfLikes, SearchSequence, IsLicensed, IsBestRank, IsFinalChoice, Rank, SearchType, Address, CreatedOn, LastModifiedOn) VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                         params: [
                             currentMediaTheme.id,
                             currentMediaYouTube.keyId,
                             currentMediaYouTube.title,
                             currentMediaYouTube.description,
+                            currentMediaYouTube.channel,
                             currentMediaYouTube.duration,
                             currentMediaYouTube.durationSeconds,
                             currentMediaYouTube.numberOfViews,
