@@ -137,6 +137,18 @@ let argv = (yargs)(process.argv.slice(2))
         }
     })
     .command({
+        command: 'tracker [options]',
+        desc: 'use to create a tracker file from anilist entries',
+        builder: (yargs) => { yargs
+            .options(commandOptions)
+            .demandOption(requiredOptions, "example: ./animedb.exe tracker --env=env --source='animedb'")
+        },
+        handler: async (argv) => {
+            await (new Program(argv.env).runTracker(argv.source, argv.archive, argv.archivePath));
+            Log.info('main : tracker command completed...');
+        }
+    })
+    .command({
         command: 'animepick [options]',
         desc: 'use to get anime information from a manual list of identifiers',
         builder: (yargs) => { yargs

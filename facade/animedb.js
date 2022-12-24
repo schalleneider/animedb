@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import exceljs from 'exceljs';
 import { execSync } from 'child_process';
 
 import { Facade } from './facade.js';
@@ -212,6 +213,53 @@ class AnimeDB extends Facade {
         }
 
         Log.info(`animedb : playlist process completed : [ success: ${processResults.success}, errors: ${processResults.errors} ]`);
+    }
+
+    async processTracker(criteria) {
+        
+        let processResults = { success: 0, errors: 0 };
+        
+        let animes = await this.database.getAniList(criteria);
+
+        Log.info(`animedb : processing tracker : [ ${criteria.criteria} ]`);
+
+        try {
+            
+            let workbook = new exceljs.Workbook();
+            await workbook.xlsx.readFile(path.resolve(criteria.templatePath));
+            let worksheet = workbook.worksheets[0];
+            
+            for (let animesIndex = 0; animesIndex < animes.length; animesIndex++) {
+                
+                const currentAnime = animes[animesIndex];
+
+                // calculation of the right position to insert new rows - template is filled from bottom -> up
+                let insertRowPosition = ((currentAnime.TrackerStartDayOfWeekNumber - 1) * 2) + 3;
+
+                // row data
+                let rowData = [
+                    currentAnime.PersonalStatus,
+                    currentAnime.AniListStartDayOfWeek,
+                    currentAnime.AniListTitle,
+                    currentAnime.AniListFormat,
+                    currentAnime.AniListNumberOfEpisodes,
+                    { text: `#${currentAnime.AniListId}`, hyperlink: currentAnime.AniListAddress },
+                    currentAnime.AniListStartDate
+                ];
+
+                const newRow = worksheet.insertRow(insertRowPosition, rowData, 'o');
+
+                processResults.success++;
+            }
+            
+            await workbook.xlsx.writeFile(path.resolve(criteria.outputPath));
+
+        } catch (error) {
+            Log.error(`[ ${criteria.criteria} ] : ${error.message}`);
+            processResults.errors++;
+        }
+
+        Log.info(`animedb : tracker process completed : [ success: ${processResults.success}, errors: ${processResults.errors} ]`);
     }
 
     mergeAnimeList(criteria, aniListAnimes, myAnimeListAnimes) {

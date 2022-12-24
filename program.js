@@ -283,6 +283,29 @@ class Program {
         }
     }
 
+    async runTracker(source, fromArchive = false, archivePath) {
+        try {
+            Log.info(`program : tracker command : [ ${source}, ${Config.configFile} ]`);
+
+            await this.database.init();
+
+            let facade = this.buildFacade(source);
+
+            if (fromArchive) {
+                throw Error(`program : redo from archive is not available for tracker command`);
+            }
+
+            await facade.processTracker(Config.commandTracker);
+            
+        } catch (error) {
+            if (error.isAxiosError) {
+                Log.fatal(error.response.data.errors);
+            }
+            Log.fatal(error.message);
+            Log.fatal(error.stack);
+        }
+    }
+
     async runAnimePick(source, fromArchive = false, archivePath) {
         try {
             Log.info(`program : animepick command : [ ${source}, ${Config.configFile} ]`);

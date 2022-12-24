@@ -77,6 +77,14 @@ class Facade {
     async processTags(criteria) {
         Log.warn('facade : tags command is not supported : see --help for more information');
     }
+    
+    async processPlaylist(criteria) {
+        Log.warn('facade : playlist command is not supported : see --help for more information');
+    }
+
+    async processTracker(criteria) {
+        Log.warn('facade : tracker command is not supported : see --help for more information');
+    }
 }
 
 export { Facade };

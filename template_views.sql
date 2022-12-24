@@ -7,6 +7,7 @@ DROP VIEW v_MediasToBatch;
 DROP VIEW v_MyAnimeListScoutMismatch;
 DROP VIEW v_ThemesInError;
 DROP VIEW v_PersonalList;
+DROP VIEW v_AniListTracker;
 DROP VIEW v_AniList;
 DROP VIEW v_MyAnimeList;
 DROP VIEW v_Themes;
@@ -300,17 +301,62 @@ AS
         AniList.Format AniListFormat,
         AniList.Season AniListSeason,
         AniList.SeasonYear AniListSeasonYear,
+        AniList.Genres AniListGenres,
         AniList.NumberOfEpisodes AniListNumberOfEpisodes,
         AniList.StartDate AniListStartDate,
+        AniList.StartWeekNumber AniListStartWeekNumber,
+        AniList.StartDayOfWeek AniListStartDayOfWeek,
+        AniList.HasPrequel AniListHasPrequel,
+        AniList.HasSequel AniListHasSequel,
         AniList.Status AniListStatus,
         AniList.Address AniListAddress,
+        AniList.CreatedOn AniListCreatedOn,
+        AniList.LastModifiedOn AniListLastModifiedOn,
         Personal.Status PersonalStatus,
         User.Name UserName
     FROM AniList
     INNER JOIN Personal ON Personal.AniListId = AniList.Id
     INNER JOIN User ON User.Id = Personal.UserId;
 
-CREATE VIEW v_Anilist
+CREATE VIEW v_AniListTracker
+AS
+    SELECT
+        AniList.Id AniListId,
+        AniList.Title AniListTitle,
+        AniList.Type AniListType,
+        AniList.Format AniListFormat,
+        AniList.Season AniListSeason,
+        AniList.SeasonYear AniListSeasonYear,
+        AniList.Genres AniListGenres,
+        AniList.NumberOfEpisodes AniListNumberOfEpisodes,
+        AniList.StartDate AniListStartDate,
+        AniList.StartWeekNumber AniListStartWeekNumber,
+        AniList.StartDayOfWeek AniListStartDayOfWeek,
+        AniList.HasPrequel AniListHasPrequel,
+        AniList.HasSequel AniListHasSequel,
+        AniList.Status AniListStatus,
+        AniList.Address AniListAddress,
+        AniList.CreatedOn AniListCreatedOn,
+        AniList.LastModifiedOn AniListLastModifiedOn,
+        Personal.Status PersonalStatus,
+        User.Name UserName,
+        CASE
+            WHEN AniList.StartDayOfWeek = 'Monday' THEN 1
+            WHEN AniList.StartDayOfWeek = 'Tuesday' THEN 2
+            WHEN AniList.StartDayOfWeek = 'Wednesday' THEN 3
+            WHEN AniList.StartDayOfWeek = 'Thursday' THEN 4
+            WHEN AniList.StartDayOfWeek = 'Friday' THEN 5
+            WHEN AniList.StartDayOfWeek = 'Saturday' THEN 6
+            WHEN AniList.StartDayOfWeek = 'Sunday' THEN 7
+        END TrackerStartDayOfWeekNumber
+    FROM AniList
+    LEFT JOIN Personal ON Personal.AniListId = AniList.Id
+    LEFT JOIN User ON User.Id = Personal.UserId
+	ORDER BY
+		TrackerStartDayOfWeekNumber DESC,
+		AniListStartDate DESC;
+
+CREATE VIEW v_AniList
 AS
     SELECT
         AniList.Id AniListId,
