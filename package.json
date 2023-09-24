@@ -5,7 +5,7 @@
   "type": "module",
   "exports": "./main.js",
   "scripts": {
-    "dist": "npx caxa --input '.' --output './bin/animedb.exe' --exclude './archive' './auth' './bin' './config' './database' './dist' './logs' './tracker' -- '{{caxa}}/node_modules/.bin/node' '{{caxa}}/main.js'",
+    "dist": "npx caxa --input './' --output './bin/animedb.exe' --exclude './archive' './auth' './bin' './config' './database' './dist' './logs' './tracker' -- '{{caxa}}/node_modules/.bin/node' '{{caxa}}/main.js'",
     "dev:help": "node main.js --help",
     "dev:start:seasons:anilist": "node main.js seasons --source='anilist'",
     "dev:start:seasons:myanimelist": "node main.js seasons --source='myanimelist'",
@@ -62,7 +62,7 @@
   "dependencies": {
     "axios": "^0.26.1",
     "axios-retry": "^3.2.4",
-    "caxa": "^2.1.0",
+    "caxa": "^3.0.1",
     "chalk": "^5.0.1",
     "eslint": "^8.12.0",
     "exceljs": "^4.3.0",
