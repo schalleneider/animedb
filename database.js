@@ -400,6 +400,131 @@ class Database {
         }
     }
 
+    async saveCustomList(animes) {
+
+        let execResults = { added: 0, updated: 0, deleted: 0, errors: 0 };
+
+        await this.begin();
+
+        try {
+
+            let user = await this.select({
+                query: `SELECT Id FROM User WHERE Name = ?`,
+                params: [animes[0].personal.userName]
+            });
+
+            if (user === undefined) {
+
+                let mustCreate = await Prompt.askConfirmation(`[ ${animes[0].personal.userName} ] user was not found in the database. must be created, otherwise fetched personal data will be lost. proceed ?`);
+
+                if (mustCreate) {
+                    let newUser = await this.exec({
+                        query: `INSERT INTO User (Id, Name, CreatedOn) VALUES (NULL, ?, ?)`,
+                        params: [
+                            animes[0].personal.userName,
+                            Common.getMomentNowFormat()
+                        ]
+                    });
+
+                    user = {
+                        Id: newUser.lastID
+                    };
+                }
+                else {
+                    Log.warn(`database : [ ${animes[0].personal.userName} ] user was not created and personal data was not commited to the database`);
+
+                    await this.commit();
+                    return;
+                }
+            }
+
+            let cleanupPersonalListResult = await this.exec({
+                query: `DELETE FROM PersonalList WHERE UserId = ?`,
+                params: [
+                    user.Id
+                ]
+            });
+            execResults.deleted += cleanupPersonalListResult.changes;
+            
+            let cleanupCustomListResult = await this.exec({
+                query: `DELETE FROM UserCustomList WHERE UserId = ?`,
+                params: [
+                    user.Id
+                ]
+            });
+            execResults.deleted += cleanupCustomListResult.changes;
+
+            let userCustomLists = [...animes[0].personal.userCustomLists];
+
+            for (let indexUserCustomLists = 0; indexUserCustomLists < userCustomLists.length; indexUserCustomLists++) {
+
+                let currentUserCustomList = userCustomLists[indexUserCustomLists];
+
+                try {
+                    await this.exec({
+                        query: `INSERT INTO UserCustomList (Id, UserId, Name, CreatedOn) VALUES (NULL, ?, ?, ?)`,
+                        params: [
+                            user.Id,
+                            currentUserCustomList,
+                            Common.getMomentNowFormat()
+                        ]
+                    });
+                    execResults.added++;
+                } catch (error) {
+                    Log.error(`database : error updating userCustomsList : [ ${animes[0].personal.userName}, ${currentUserCustomList} ]`);
+                    Log.error(error.message);
+                    Log.error(error.stack);
+                    execResults.errors++;
+                }
+
+            }
+
+            for (let animeIndex = 0; animeIndex < animes.length; animeIndex++) {
+
+                const currentAnimeAniList = animes[animeIndex].anilist;
+                const currentAnimePersonal = animes[animeIndex].personal;
+                const currentAnimePersonalList = [...animes[animeIndex].personalList];
+
+                for (let indexCurrentAnimePersonalList = 0; indexCurrentAnimePersonalList < currentAnimePersonalList.length; indexCurrentAnimePersonalList++) {
+
+                    let currentAnimePersonalListItem = currentAnimePersonalList[indexCurrentAnimePersonalList];
+
+                    try {
+                        await this.exec({
+                            query: `INSERT INTO PersonalList SELECT Id, ?, UserId, ? FROM UserCustomList WHERE Name = ? AND UserId = ?`,
+                            params: [
+                                currentAnimeAniList.id,
+                                Common.getMomentNowFormat(),
+                                currentAnimePersonalListItem.userCustomList,
+                                user.Id
+                                
+                            ]
+                        });
+                        execResults.added++;
+                    } catch (error) {
+                        Log.error(`database : error updating personalList : [ ${currentAnimePersonal.userName}, ${currentAnimePersonalListItem.userCustomList}, ${currentAnimeAniList.id}, ${currentAnimeAniList.title} ]`);
+                        Log.error(error.message);
+                        Log.error(error.stack);
+                        execResults.errors++;
+                    }
+
+                }
+                
+            }
+
+            await this.commit();
+
+            Log.info(`database : userCustomsList and personalList updated : [ added: ${execResults.added}, updated: ${execResults.updated}, deleted: ${execResults.deleted}, errors: ${execResults.errors} ]`);
+
+        } catch (error) {
+            Log.error(`database : error updating userCustomsList and personalList : [ ${animes[0].personal.userName} ]`);
+            Log.error(error.message);
+            Log.error(error.stack);
+            await this.rollback();
+        }
+
+    }
+
     async saveMyAnimeList(animes) {
 
         let execResults = { added: 0, updated: 0, deleted: 0, errors: 0 };

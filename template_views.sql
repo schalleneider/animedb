@@ -36,7 +36,8 @@ AS
     INNER JOIN Personal ON Personal.AniListId = AniList.Id
     INNER JOIN User ON User.Id = Personal.UserId
     WHERE 
-        AniList.Id NOT IN (
+        Personal.Status IN ('CURRENT')
+    AND AniList.Id NOT IN (
             SELECT DISTINCT 
                 AniList_MyAnimeList.AniListId 
             FROM AniList_MyAnimeList
@@ -91,6 +92,9 @@ AS
         Theme.Type ThemeType,
         Theme.Sequence ThemeSequence,
         Theme.Algorithm ThemeAlgorithm,
+        Theme.AppHidden ThemeAppHidden,
+        Theme.IsFavorite ThemeIsFavorite,
+        Theme.IsBad ThemeIsBad,
         MyAnimeList.Id MyAnimeListId,
         MyAnimeList.Title MyAnimeListTitle,
         MyAnimeList.Type MyAnimeListType,
@@ -119,8 +123,9 @@ AS
     INNER JOIN AniList ON AniList.Id = AniList_MyAnimeList.AniListId 
     INNER JOIN Personal ON Personal.AniListId = AniList.Id
     INNER JOIN User ON User.Id = Personal.UserId
-    WHERE 
-        Theme.Algorithm NOT IN ('ERROR')
+    WHERE  
+        Personal.Status IN ('CURRENT')
+    AND Theme.Algorithm NOT IN ('ERROR')
     AND Theme.Id NOT IN (
             SELECT DISTINCT 
                 Media.ThemeId 
@@ -156,6 +161,9 @@ AS
         Theme.Type ThemeType,
         Theme.Sequence ThemeSequence,
         Theme.Algorithm ThemeAlgorithm,
+        Theme.AppHidden ThemeAppHidden,
+        Theme.IsFavorite ThemeIsFavorite,
+        Theme.IsBad ThemeIsBad,
         Theme.CreatedOn ThemeCreatedOn,
         MyAnimeList.Id MyAnimeListId,
         MyAnimeList.Title MyAnimeListTitle,
@@ -255,6 +263,9 @@ AS
         Theme.Type ThemeType,
         Theme.Sequence ThemeSequence,
         Theme.Algorithm ThemeAlgorithm,
+        Theme.AppHidden ThemeAppHidden,
+        Theme.IsFavorite ThemeIsFavorite,
+        Theme.IsBad ThemeIsBad,
         MyAnimeList.Id MyAnimeListId,
         MyAnimeList.Title MyAnimeListTitle,
         MyAnimeList.Type MyAnimeListType,
@@ -313,10 +324,14 @@ AS
         AniList.CreatedOn AniListCreatedOn,
         AniList.LastModifiedOn AniListLastModifiedOn,
         Personal.Status PersonalStatus,
+		UserCustomList.Name UserCustomListName,
         User.Name UserName
-    FROM AniList
-    INNER JOIN Personal ON Personal.AniListId = AniList.Id
-    INNER JOIN User ON User.Id = Personal.UserId;
+    FROM Personal
+    INNER JOIN AniList ON AniList.Id = Personal.AniListId
+    INNER JOIN User ON User.Id = Personal.UserId
+	LEFT JOIN PersonalList ON PersonalList.UserId = User.Id AND PersonalList.AniListId = AniList.Id
+	LEFT JOIN UserCustomList ON UserCustomList.UserId = User.Id AND UserCustomList.Id = PersonalList.UserCustomListId;
+
 
 CREATE VIEW v_AniListTracker
 AS
@@ -436,6 +451,9 @@ AS
         Theme.Type ThemeType,
         Theme.Sequence ThemeSequence,
         Theme.Algorithm ThemeAlgorithm,
+        Theme.AppHidden ThemeAppHidden,
+        Theme.IsFavorite ThemeIsFavorite,
+        Theme.IsBad ThemeIsBad,
         Theme.CreatedOn ThemeCreatedOn,
         MyAnimeList.Id MyAnimeListId,
         MyAnimeList.Title MyAnimeListTitle,
@@ -508,6 +526,9 @@ AS
         Theme.Type ThemeType,
         Theme.Sequence ThemeSequence,
         Theme.Algorithm ThemeAlgorithm,
+        Theme.AppHidden ThemeAppHidden,
+        Theme.IsFavorite ThemeIsFavorite,
+        Theme.IsBad ThemeIsBad,
         Theme.CreatedOn ThemeCreatedOn,
         MyAnimeList.Id MyAnimeListId,
         MyAnimeList.Title MyAnimeListTitle,
@@ -591,6 +612,9 @@ AS
         Theme.Type ThemeType,
         Theme.Sequence ThemeSequence,
         Theme.Algorithm ThemeAlgorithm,
+        Theme.AppHidden ThemeAppHidden,
+        Theme.IsFavorite ThemeIsFavorite,
+        Theme.IsBad ThemeIsBad,
         Theme.CreatedOn ThemeCreatedOn,
         MyAnimeList.Id MyAnimeListId,
         MyAnimeList.Title MyAnimeListTitle,
@@ -620,7 +644,8 @@ AS
         AniList.Address AniListAddress,
         AniList.CreatedOn AniListCreatedOn,
         AniList.LastModifiedOn AniListLastModifiedOn,
-        Personal.Status PersonalStatus
+        Personal.Status PersonalStatus,
+        User.Name UserName
     FROM Download
     INNER JOIN Media ON Media.Id = Download.KeyId
     INNER JOIN Theme ON Theme.Id = Media.ThemeId

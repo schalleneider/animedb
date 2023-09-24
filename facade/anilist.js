@@ -118,6 +118,11 @@ class AniList extends Facade {
                 hasNextChunk
                 user {
                     name
+                    mediaListOptions {
+                        animeList {
+                            customLists
+                        }
+                    }
                 }
                 lists {
                     entries {
@@ -147,6 +152,7 @@ class AniList extends Facade {
                                 }
                             }
                         }
+                        customLists
                     }
                 }
             }
@@ -276,6 +282,7 @@ class AniList extends Facade {
         Log.info(`anilist : saving personal anime : [ ${animes.length} entries ]`);
         await this.database.saveAniList(animes);
         await this.database.savePersonal(animes);
+        await this.database.saveCustomList(animes);
     }
 
     async saveAnimePick(animes) {
@@ -333,6 +340,7 @@ class AniList extends Facade {
     parseAnimeByPersonalListResponse(response) {
         let parsedResponse = [];
         let userName = response.data.MediaListCollection.user.name;
+        let userCustomLists = [...response.data.MediaListCollection.user.mediaListOptions.animeList.customLists];
         let lists = [...response.data.MediaListCollection.lists];
         for (let indexList = 0; indexList < lists.length; indexList++) {
             let currentList = lists[indexList];
@@ -345,8 +353,21 @@ class AniList extends Facade {
                 // personal properties
                 item.personal = { 
                     status: currentEntry.status,
-                    userName: userName
+                    userName: userName,
+                    userCustomLists: userCustomLists
                 };
+                let personalList = [];
+                for (let indexUserCustomLists = 0; indexUserCustomLists < userCustomLists.length; indexUserCustomLists++) {
+                    let currentUserCustomList = userCustomLists[indexUserCustomLists];
+                    if (currentEntry.customLists[currentUserCustomList] === true) {
+                        let personalListItem = {
+                            userCustomList: currentUserCustomList
+                        }
+                        // push personal list item
+                        personalList.push(personalListItem);
+                    }
+                }
+                item.personalList = personalList;
                 // push parsed item
                 parsedResponse.push(item);
                 Log.trace(`anilist : parsed anime entry : [ ${userName}, ${item.anilist.id}, ${item.anilist.title}, ${item.personal.status} ]`);
