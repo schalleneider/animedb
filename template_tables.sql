@@ -1,14 +1,16 @@
 -- DROPS
 
 DROP TABLE Personal;
+DROP TABLE PersonalList;
 DROP TABLE AniList_MyAnimeList;
-DROP TABLE SourceType;
 DROP TABLE Download;
 DROP TABLE Media;
 DROP TABLE AniList;
 DROP TABLE MyAnimeList;
 DROP TABLE Theme;
 DROP TABLE Source;
+DROP TABLE SourceType;
+DROP TABLE UserCustomList;
 DROP TABLE User;
 
 -- TABLES
@@ -18,6 +20,15 @@ CREATE TABLE "User" (
     "Name" TEXT,
     "CreatedOn" TEXT,
     PRIMARY KEY("Id")
+);
+
+CREATE TABLE "UserCustomList" (
+    "Id" INTEGER,
+    "UserId" INTEGER,
+    "Name" TEXT,
+    "CreatedOn" TEXT,
+    PRIMARY KEY("Id"),
+    FOREIGN KEY("UserId") REFERENCES "User"("Id")
 );
 
 CREATE TABLE "SourceType" (
@@ -95,6 +106,17 @@ CREATE TABLE "Personal" (
     FOREIGN KEY("UserId") REFERENCES "User"("Id")
 );
 
+CREATE TABLE "PersonalList" (
+    "UserCustomListId" INTEGER,
+    "AniListId" INTEGER,
+    "UserId" INTEGER,
+    "CreatedOn" TEXT,
+    PRIMARY KEY("UserId","AniListId","UserCustomListId"),
+    FOREIGN KEY("UserId") REFERENCES "User"("Id"),
+    FOREIGN KEY("AniListId") REFERENCES "AniList"("Id"),
+    FOREIGN KEY("UserCustomListId") REFERENCES "UserCustomList"("Id")
+);
+
 CREATE TABLE "Theme" (
     "Id" INTEGER,
     "KeyId" TEXT,
@@ -105,6 +127,8 @@ CREATE TABLE "Theme" (
     "Sequence" INTEGER,
     "Algorithm" TEXT,
     "AppHidden" INTEGER,
+    "IsFavorite" INTEGER,
+    "IsBad" INTEGER,
     "CreatedOn" TEXT,
     PRIMARY KEY("Id"),
     FOREIGN KEY("KeyId") REFERENCES "Source"("KeyId")
