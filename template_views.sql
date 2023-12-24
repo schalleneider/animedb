@@ -36,7 +36,7 @@ AS
     INNER JOIN Personal ON Personal.AniListId = AniList.Id
     INNER JOIN User ON User.Id = Personal.UserId
     WHERE 
-        Personal.Status IN ('CURRENT')
+        Personal.Status IN ('CURRENT', 'REPEATING')
     AND AniList.Id NOT IN (
             SELECT DISTINCT 
                 AniList_MyAnimeList.AniListId 
@@ -72,13 +72,18 @@ AS
     INNER JOIN Personal ON Personal.AniListId = AniList.Id
     INNER JOIN User ON User.Id = Personal.UserId
     WHERE 
-        Personal.Status IN ('CURRENT')
+        Personal.Status IN ('CURRENT', 'REPEATING')
     AND MyAnimeList.Id NOT IN (
             SELECT DISTINCT 
                 Source.ExternalId 
             FROM Source
             INNER JOIN SourceType ON SourceType.Id = Source.SourceTypeId AND SourceType.Name = 'MyAnimeList' 
             INNER JOIN Theme ON Theme.KeyId = Source.KeyId
+			INNER JOIN MyAnimeList ON MyAnimeList.Id = Source.ExternalId 
+			INNER JOIN AniList_MyAnimeList ON AniList_MyAnimeList.MyAnimeListId = MyAnimeList.Id 
+			INNER JOIN AniList ON AniList.Id = AniList_MyAnimeList.AniListId 
+			INNER JOIN Personal ON Personal.AniListId = AniList.Id
+			WHERE Personal.Status NOT IN ('REPEATING')
         );
 
 CREATE VIEW v_MediasToSearch
@@ -124,7 +129,7 @@ AS
     INNER JOIN Personal ON Personal.AniListId = AniList.Id
     INNER JOIN User ON User.Id = Personal.UserId
     WHERE  
-        Personal.Status IN ('CURRENT')
+        Personal.Status IN ('CURRENT', 'REPEATING')
     AND Theme.Algorithm NOT IN ('ERROR')
     AND Theme.Id NOT IN (
             SELECT DISTINCT 
